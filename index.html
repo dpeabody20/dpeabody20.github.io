@@ -1,6 +1,35 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <style>
+        body {
+            background-color: rgb(21, 28, 30);
+            color:rgb(205, 212, 218);
+        }
+        input {
+            background-color: rgb(28, 37, 40);
+            color:rgb(205, 212, 218);
+            border: rgb(200, 200, 200) solid 1px;
+        }
+        input:disabled {
+            background-color: rgb(47, 58, 62);
+            color:rgb(175, 182, 188);
+        }
+        select {
+            background-color: rgb(28, 37, 40);
+            color:rgb(205, 212, 218);
+        }
+        button {
+            background-color: rgb(28, 37, 40);
+            color:rgb(205, 212, 218);
+        }
+        button:hover:enabled {
+            background-color: rgb(140, 189, 220);
+            color:rgb(69, 71, 72);
+        }
+        
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script type="text/javascript">
         const aircraft_weight = {
             N103UV: 1767.89,
@@ -87,43 +116,108 @@
             N4012X: true
         }
 
+        let aircraft = -1;
+        let empty_weight = 0;
+        let empty_cg = 0;
+        let max_gal = 50;
+
+        function updateWeight(new_weight) {
+            empty_weight = new_weight;
+        }
+        function updateCg(new_cg) {
+            empty_cg = new_cg;
+        }
+
         function changeAircraft(new_aircraft) {
-            let empty_weight = document.getElementById("empty_weight");
-            let empty_cg = document.getElementById("empty_cg");
-            let max_gal = document.getElementById("max_gal");
+            let empty_weight_element = document.getElementById("empty_weight");
+            let empty_cg_element = document.getElementById("empty_cg");
+            let max_gal_element = document.getElementById("max_gal");
 
             if (new_aircraft == -1) {
-                empty_weight.disabled = false;
-                empty_cg.disabled = false;
+                empty_weight_element.disabled = false;
+                empty_cg_element.disabled = false;
 
-                empty_weight.value = 0;
-                empty_cg.value = 0;
-                max_gal.innerHTML = "gal (max 40) (Standard Tank)";
-                return;
+                empty_weight = 0;
+                empty_cg = 0;
+            } else {
+                empty_weight_element.disabled = true;
+                empty_cg_element.disabled = true;
+
+                empty_weight = aircraft_weight[new_aircraft];
+                empty_cg = aircraft_cg[new_aircraft];
             }
 
-            empty_weight.disabled = true;
-            empty_cg.disabled = true;
-
-            empty_weight.value = aircraft_weight[new_aircraft];
-            empty_cg.value = aircraft_cg[new_aircraft];
+            empty_weight_element.value = empty_weight;
+            empty_cg_element.value = empty_cg;
 
             if (aircraft_long_range_tank[new_aircraft]) {
-                max_gal.innerHTML = "gal (max 50) (Long Range Tank)";
+                max_gal_element.innerHTML = "gal (max 50) (Long Range Tank)";
             } else {
-                max_gal.innerHTML = "gal (max 40.2) (Standard Tank)";
+                max_gal_element.innerHTML = "gal (max 40.2) (Standard Tank)";
             }
-
-            alert(aircraft_list);
         }
         function getAirport() {
+            //case insensitive (prefer lowercase)
+            //let metarReq = "https://aviationweather.gov/api/data/metar?ids=kpvu";
+            //uppercase!
+            //let airportInfo = "https://aviationweather.gov/api/data/airport?ids=KPVU";
+            
+            //HTTP request
+            //console.log(jQuery.get(metarReq));
+            
             alert("not working yet");
         }
         function calculatePerformance() {
-            alert("presly is dumb");
 
-            let empty_weight = document.getElementById("empty_weight");
-            let empty_cg = document.getElementById("empty_cg");
+            //data collection variables
+            let performance_input_page = document.getElementById("performance_input_page");
+            let results_page = document.getElementById("results_page");
+
+            let front_weight = document.getElementById("front_weight");
+            let front_weight_2 = document.getElementById("front_weight_2");
+            let rear_weight = document.getElementById("rear_weight");
+            let rear_weight_2 = document.getElementById("rear_weight_2");
+            let fuel = document.getElementById("fuel");
+            let fuel_use = document.getElementById("fuel_use");
+
+            let field_elevation = document.getElementById("field_elevation");
+            let field_temperature = document.getElementById("field_temperature");
+            let altimiter_setting = document.getElementById("altimiter_setting");
+
+            let disclaimer = document.getElementById("disclaimer");
+            
+            //data display variables
+            //none yet
+
+            //verify info is valid
+            if (empty_weight <= 0) {
+                alert("Weight is not a valid value. Must be positive.");
+                return;
+            }
+            if (empty_cg <= 0) {
+                alert("Arm is not a valid value. Must be positive.");
+                return;
+            }
+            if (altimiter_setting.value < 0) {
+                alert("Altimiter setting is not a valid value. Must be positive.");
+                return;
+            }
+            if (!disclaimer.checked) {
+                alert("Please check the disclaimer box to continue.");
+                return;
+            }
+
+            //compute performance
+            let total_empty_weight = Number(empty_weight) + Number(front_weight.value) + Number(front_weight_2.value) + Number(rear_weight.value) + Number(rear_weight_2.value);
+
+            //display results
+            performance_input_page.style.display = "none";
+            results_page.style.display = "block";
+
+
+            alert("Presly's plane is large and weighs " + total_empty_weight + " lbs");
+
+            
 
         }
         
@@ -131,113 +225,124 @@
   </head>
 
 <body>
-    <img src="images/logo.png" alt="PPC Logo" width="200" height="200">
-    <p>This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM.</p>
-    <h3>Enter performance parameters (DA40)</h3>
+    <div id="performance_input_page" style="display:block;max-width:600px;margin:auto;">
+        <div style="display: flex;justify-content: center;">
+            <img src="images/logo.png" alt="PPC Logo" style="max-width: 200px;">
+        </div>
+        <p>This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM.</p>
+        <h3>Enter performance parameters (DA40)</h3>
 
-    <h4>-Select Aircraft-</h4>
-    <table>
-        <tr>
-            <td><label for="aircraft">Identifier:</label></td>
-            <td>
-                <select id="aircraft" onchange="changeAircraft(this.value);">
-                    <option value="-1">[Manual Entry]</option>
-                    <option value="N103UV">N103UV</option>
-                    <option value="N104UV">N104UV</option>
-                    <option value="N105UV">N105UV</option>
-                    <option value="N106UV">N106UV</option>
-                    <option value="N107UV">N107UV</option>
-                    <option value="N108UV">N108UV</option>
-                    <option value="N109UV">N109UV</option>
-                    <option value="N110UV">N110UV</option>
-                    <option value="N112UV">N112UV</option>
-                    <option value="N113UV">N113UV</option>
-                    <option value="N114UV">N114UV</option>
-                    <option value="N115UV">N115UV</option>
-                    <option value="N116UV">N116UV</option>
-                    <option value="N118UV">N118UV</option>
-                    <option value="N119UV">N119UV</option>
-                    <option value="N749DS">N749DS</option>
-                    <option value="N779US">N779US</option>
-                    <option value="N793US">N793US</option>
-                    <option value="N4012X">N4012X</option>
-                </select>
-            </td>
-            <td></td>
-        </tr>
-        <tr>
-            <td><label for="empty_weight">Empty Weight:</label></td>
-            <td><input type="number" id="empty_weight" value="0"></td>
-            <td>lb</td>
-        </tr>
-        <tr>
-            <td><label for="empty_cg">Empty Arm:</label></td>
-            <td><input type="number" id="empty_cg" value="0"></td>
-            <td>in</td>
-        </tr>
-    </table><br>
+        <h4>-Select Aircraft-</h4>
+        <table>
+            <tr>
+                <td><label for="aircraft">Identifier:</label></td>
+                <td>
+                    <select id="aircraft" onchange="changeAircraft(this.value);">
+                        <option value="-1">[Manual Entry]</option>
+                        <option value="N103UV">N103UV</option>
+                        <option value="N104UV">N104UV</option>
+                        <option value="N105UV">N105UV</option>
+                        <option value="N106UV">N106UV</option>
+                        <option value="N107UV">N107UV</option>
+                        <option value="N108UV">N108UV</option>
+                        <option value="N109UV">N109UV</option>
+                        <option value="N110UV">N110UV</option>
+                        <option value="N112UV">N112UV</option>
+                        <option value="N113UV">N113UV</option>
+                        <option value="N114UV">N114UV</option>
+                        <option value="N115UV">N115UV</option>
+                        <option value="N116UV">N116UV</option>
+                        <option value="N118UV">N118UV</option>
+                        <option value="N119UV">N119UV</option>
+                        <option value="N749DS">N749DS</option>
+                        <option value="N779US">N779US</option>
+                        <option value="N793US">N793US</option>
+                        <option value="N4012X">N4012X</option>
+                    </select>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><label for="empty_weight">Empty Weight:</label></td>
+                <td><input type="number" id="empty_weight" value="0" onchange="updateWeight(this.value);"></td>
+                <td>lb</td>
+            </tr>
+            <tr>
+                <td><label for="empty_cg">Empty Arm:</label></td>
+                <td><input type="number" id="empty_cg" value="0" onchange="updateCg(this.value);"></td>
+                <td>in</td>
+            </tr>
+        </table><br>
 
-    <h4>-Aircraft Loading-</h4>
-    <table>
-        <tr>
-            <td><label for="front_weight">Front Seats:</label></td>
-            <td><input type="number" id="front_weight" name="front_weight"></td>
-            <td>lb</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td><input type="number" id="front_weight_2" name="front_weight_2"></td>
-            <td>lb</td>
-        </tr>
-        <tr>
-            <td><label for="rear_weight">Rear Seats:</label></td>
-            <td><input type="number" id="rear_weight" name="rear_weight"></td>
-            <td>lb</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td><input type="number" id="rear_weight_2" name="rear_weight_2"></td>
-            <td>lb</td>
-        </tr>
-        <tr>
-            <td><label for="fuel">Starting Fuel:</label></td>
-            <td><input type="number" id="fuel" name="fuel"></td>
-            <td id="max_gal">gal</td>
-        </tr>
-        <tr>
-            <td><label for="fuel_use">Fuel Use:</label></td>
-            <td><input type="number" id="fuel_use" name="fuel_use"></td>
-            <td>gal</td>
-        </tr>
-    </table><br>
+        <h4>-Aircraft Loading-</h4>
+        <table>
+            <tr>
+                <td><label for="front_weight">Front Seats:</label></td>
+                <td><input type="number" id="front_weight" name="front_weight"></td>
+                <td>lb</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="number" id="front_weight_2" name="front_weight_2"></td>
+                <td>lb</td>
+            </tr>
+            <tr>
+                <td><label for="rear_weight">Rear Seats:</label></td>
+                <td><input type="number" id="rear_weight" name="rear_weight"></td>
+                <td>lb</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><input type="number" id="rear_weight_2" name="rear_weight_2"></td>
+                <td>lb</td>
+            </tr>
+            <tr>
+                <td><label for="standard_bag_weight">Standard Bag Comp:</label></td>
+                <td><input type="number" id="standard_bag_weight" name="standard_bag_weight"></td>
+                <td>lb</td>
+            </tr>
+            <tr>
+                <td><label for="fuel">Starting Fuel:</label></td>
+                <td><input type="number" id="fuel" name="fuel"></td>
+                <td id="max_gal">gal</td>
+            </tr>
+            <tr>
+                <td><label for="fuel_use">Fuel Use:</label></td>
+                <td><input type="number" id="fuel_use" name="fuel_use"></td>
+                <td>gal</td>
+            </tr>
+        </table><br>
 
-    <h4>-Airport Conditions-</h4>
-    <table>
-        <tr>
-            <td><label for="airport">Airport Identifier:</label></td>
-            <td><input type="text" id="airport" name="airport" value="kpvu"></td>
-            <td><button onclick="getAirport()">Auto collect weather</button></td>
+        <h4>-Airport Conditions-</h4>
+        <table>
+            <tr>
+                <td><label for="airport">Airport Identifier:</label></td>
+                <td><input type="text" id="airport" name="airport" value="kpvu (this isn't working yet)" disabled="true"></td>
+                <td><button onclick="getAirport()" disabled="true">Auto collect weather</button></td>
 
-        </tr>
-        <tr>
-            <td><label for="field_elevation">Field Elevation:</label></td>
-            <td><input type="number" id="field_elevation" name="field_elevation" value="0"></td>
-            <td>ft</td>
-        </tr>
-        <tr>
-            <td><label for="field_temperature">Temperature:</label></td>
-            <td><input type="number" id="field_temperature" name="field_temperature" value="15"></td>
-            <td>°c</td>
-        </tr>
-        <tr>
-            <td><label for="altimiter_setting">Altimiter Setting:</label></td>
-            <td><input type="number" id="altimiter_setting" name="altimiter_setting" value="29.92"></td>
-            <td>in Hg</td>
-        </tr>
-    </table><br>
-    <label for="disclaimer">Disclaimer: By checking this box, you understand that this tool does not replace the pilot's responsibility to verify performance charactaristics with the aircraft's approved AFM.</label><br>
-    <input id="disclaimer" type="checkbox"><br><br>
-    <button onclick="calculatePerformance()">Calculate Performance</button>
-
+            </tr>
+            <tr>
+                <td><label for="field_elevation">Field Elevation:</label></td>
+                <td><input type="number" id="field_elevation" name="field_elevation" value="0"></td>
+                <td>ft</td>
+            </tr>
+            <tr>
+                <td><label for="field_temperature">Temperature:</label></td>
+                <td><input type="number" id="field_temperature" name="field_temperature" value="15"></td>
+                <td>°c</td>
+            </tr>
+            <tr>
+                <td><label for="altimiter_setting">Altimiter Setting:</label></td>
+                <td><input type="number" id="altimiter_setting" name="altimiter_setting" value="29.92"></td>
+                <td>in Hg</td>
+            </tr>
+        </table><br>
+        <label for="disclaimer">Disclaimer: By checking this box, you understand that this tool does not replace the pilot's responsibility to verify performance charactaristics with the aircraft's approved AFM.</label><br>
+        <input id="disclaimer" type="checkbox"><br><br>
+        <button onclick="calculatePerformance()">Calculate Performance</button>
+    </div>
+    <div id="results_page" style="display:none;">
+        Results!
+    </div>
 </body>
 </html>
