@@ -1,18 +1,243 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <script type="text/javascript">
+        const aircraft_weight = {
+            N103UV: 1767.89,
+            N104UV: 1735.86,
+            N105UV: 1754.86,
+            N106UV: 1771.86,
+            N107UV: 1844.80,
+            N108UV: 1777.00,
+            N109UV: 1813.33,
+            N110UV: 1815.90,
+            N112UV: 1815.24,
+            N113UV: 1815.64,
+            N114UV: 1810.04,
+            N115UV: 1808.94,
+            N116UV: 1808.76,
+            N118UV: 1817.35,
+            N119UV: 1813.42,
+            N749DS: 1799.10,
+            N779US: 1789.94,
+            N793US: 1800.84,
+            N4012X: 1794.56
+        }
+        const aircraft_cg = {
+            N103UV: 96.598,
+            N104UV: 96.99,
+            N105UV: 96.85,
+            N106UV: 97.07,
+            N107UV: 98.4,
+            N108UV: 96.58,
+            N109UV: 97.6,
+            N110UV: 97.45,
+            N112UV: 97.25,
+            N113UV: 97.52,
+            N114UV: 97.32,
+            N115UV: 97.36,
+            N116UV: 97.16,
+            N118UV: 97.46,
+            N119UV: 97.65,
+            N749DS: 98.13,
+            N779US: 98.33,
+            N793US: 98.01,
+            N4012X: 99.22
+        }
+        const aircraft_max_landing_weight = {
+            N103UV: 2407,
+            N104UV: 2407,
+            N105UV: 2407,
+            N106UV: 2407,
+            N107UV: 2535,
+            N108UV: 2535,
+            N109UV: 2535,
+            N110UV: 2535,
+            N112UV: 2535,
+            N113UV: 2535,
+            N114UV: 2535,
+            N115UV: 2535,
+            N116UV: 2535,
+            N118UV: 2535,
+            N119UV: 2535,
+            N749DS: 2535,
+            N779US: 2407,
+            N793US: 2535,
+            N4012X: 2535
+        }
+        const aircraft_long_range_tank = {
+            N103UV: true,
+            N104UV: true,
+            N105UV: true,
+            N106UV: true,
+            N107UV: true,
+            N108UV: true,
+            N109UV: false,
+            N110UV: false,
+            N112UV: false,
+            N113UV: false,
+            N114UV: false,
+            N115UV: false,
+            N116UV: false,
+            N118UV: false,
+            N119UV: false,
+            N749DS: true,
+            N779US: true,
+            N793US: true,
+            N4012X: true
+        }
+
+        function changeAircraft(new_aircraft) {
+            let empty_weight = document.getElementById("empty_weight");
+            let empty_cg = document.getElementById("empty_cg");
+            let max_gal = document.getElementById("max_gal");
+
+            if (new_aircraft == -1) {
+                empty_weight.disabled = false;
+                empty_cg.disabled = false;
+
+                empty_weight.value = 0;
+                empty_cg.value = 0;
+                max_gal.innerHTML = "gal (max 40) (Standard Tank)";
+                return;
+            }
+
+            empty_weight.disabled = true;
+            empty_cg.disabled = true;
+
+            empty_weight.value = aircraft_weight[new_aircraft];
+            empty_cg.value = aircraft_cg[new_aircraft];
+
+            if (aircraft_long_range_tank[new_aircraft]) {
+                max_gal.innerHTML = "gal (max 50) (Long Range Tank)";
+            } else {
+                max_gal.innerHTML = "gal (max 40.2) (Standard Tank)";
+            }
+
+            alert(aircraft_list);
+        }
+        function getAirport() {
+            alert("not working yet");
+        }
+        function calculatePerformance() {
+            alert("presly is dumb");
+
+            let empty_weight = document.getElementById("empty_weight");
+            let empty_cg = document.getElementById("empty_cg");
+
+        }
+        
+    </script>
+  </head>
+
 <body>
+    <img src="images/logo.png" alt="PPC Logo" width="200" height="200">
+    <p>This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM.</p>
+    <h3>Enter performance parameters (DA40)</h3>
 
-<h1>The input value attribute</h1>
+    <h4>-Select Aircraft-</h4>
+    <table>
+        <tr>
+            <td><label for="aircraft">Identifier:</label></td>
+            <td>
+                <select id="aircraft" onchange="changeAircraft(this.value);">
+                    <option value="-1">[Manual Entry]</option>
+                    <option value="N103UV">N103UV</option>
+                    <option value="N104UV">N104UV</option>
+                    <option value="N105UV">N105UV</option>
+                    <option value="N106UV">N106UV</option>
+                    <option value="N107UV">N107UV</option>
+                    <option value="N108UV">N108UV</option>
+                    <option value="N109UV">N109UV</option>
+                    <option value="N110UV">N110UV</option>
+                    <option value="N112UV">N112UV</option>
+                    <option value="N113UV">N113UV</option>
+                    <option value="N114UV">N114UV</option>
+                    <option value="N115UV">N115UV</option>
+                    <option value="N116UV">N116UV</option>
+                    <option value="N118UV">N118UV</option>
+                    <option value="N119UV">N119UV</option>
+                    <option value="N749DS">N749DS</option>
+                    <option value="N779US">N779US</option>
+                    <option value="N793US">N793US</option>
+                    <option value="N4012X">N4012X</option>
+                </select>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><label for="empty_weight">Empty Weight:</label></td>
+            <td><input type="number" id="empty_weight" value="0"></td>
+            <td>lb</td>
+        </tr>
+        <tr>
+            <td><label for="empty_cg">Empty Arm:</label></td>
+            <td><input type="number" id="empty_cg" value="0"></td>
+            <td>in</td>
+        </tr>
+    </table><br>
 
-<p>The value attribute specifies an initial value for an input field:</p>
+    <h4>-Aircraft Loading-</h4>
+    <table>
+        <tr>
+            <td><label for="front_weight">Front Seats:</label></td>
+            <td><input type="number" id="front_weight" name="front_weight"></td>
+            <td>lb</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="number" id="front_weight_2" name="front_weight_2"></td>
+            <td>lb</td>
+        </tr>
+        <tr>
+            <td><label for="rear_weight">Rear Seats:</label></td>
+            <td><input type="number" id="rear_weight" name="rear_weight"></td>
+            <td>lb</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="number" id="rear_weight_2" name="rear_weight_2"></td>
+            <td>lb</td>
+        </tr>
+        <tr>
+            <td><label for="fuel">Starting Fuel:</label></td>
+            <td><input type="number" id="fuel" name="fuel"></td>
+            <td id="max_gal">gal</td>
+        </tr>
+        <tr>
+            <td><label for="fuel_use">Fuel Use:</label></td>
+            <td><input type="number" id="fuel_use" name="fuel_use"></td>
+            <td>gal</td>
+        </tr>
+    </table><br>
 
-<form action="/action_page.php">
-  <label for="fname">First name:</label><br>
-  <input type="text" id="fname" name="fname" value="John"><br>
-  <label for="lname">Last name:</label><br>
-  <input type="text" id="lname" name="lname" value="Doe"><br><br>
-  <input type="submit" value="Submit">
-</form>
+    <h4>-Airport Conditions-</h4>
+    <table>
+        <tr>
+            <td><label for="airport">Airport Identifier:</label></td>
+            <td><input type="text" id="airport" name="airport" value="kpvu"></td>
+            <td><button onclick="getAirport()">Auto collect weather</button></td>
+
+        </tr>
+        <tr>
+            <td><label for="field_elevation">Field Elevation:</label></td>
+            <td><input type="number" id="field_elevation" name="field_elevation" value="0"></td>
+            <td>ft</td>
+        </tr>
+        <tr>
+            <td><label for="field_temperature">Temperature:</label></td>
+            <td><input type="number" id="field_temperature" name="field_temperature" value="15"></td>
+            <td>°c</td>
+        </tr>
+        <tr>
+            <td><label for="altimiter_setting">Altimiter Setting:</label></td>
+            <td><input type="number" id="altimiter_setting" name="altimiter_setting" value="29.92"></td>
+            <td>in Hg</td>
+        </tr>
+    </table><br>
+    <label for="disclaimer">Disclaimer: By checking this box, you understand that this tool does not replace the pilot's responsibility to verify performance charactaristics with the aircraft's approved AFM.</label><br>
+    <input id="disclaimer" type="checkbox"><br><br>
+    <button onclick="calculatePerformance()">Calculate Performance</button>
 
 </body>
 </html>
