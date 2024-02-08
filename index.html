@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             background-color: rgb(21, 28, 30);
@@ -32,7 +32,9 @@
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script type="text/javascript">
+        
         const aircraft_weight = {
+            ME: 0,
             N103UV: 1767.89,
             N104UV: 1735.86,
             N105UV: 1754.86,
@@ -52,8 +54,9 @@
             N779US: 1789.94,
             N793US: 1800.84,
             N4012X: 1794.56
-        }
+        };
         const aircraft_cg = {
+            ME: 0,
             N103UV: 96.598,
             N104UV: 96.99,
             N105UV: 96.85,
@@ -73,8 +76,9 @@
             N779US: 98.33,
             N793US: 98.01,
             N4012X: 99.22
-        }
+        };
         const aircraft_max_landing_weight = {
+            ME: 2535,
             N103UV: 2407,
             N104UV: 2407,
             N105UV: 2407,
@@ -94,8 +98,10 @@
             N779US: 2407,
             N793US: 2535,
             N4012X: 2535
-        }
+        };
+        const aircraft_max_takeoff_weight = 2646;
         const aircraft_long_range_tank = {
+            ME: true,
             N103UV: true,
             N104UV: true,
             N105UV: true,
@@ -115,47 +121,94 @@
             N779US: true,
             N793US: true,
             N4012X: true
-        }
+        };
+        //classifies the baggage configuration - See AFM 6-6.
+        const aircraft_baggage_configuration = {
+            ME: "a",
+            N103UV: "a",
+            N104UV: "a",
+            N105UV: "c",
+            N106UV: "a",
+            N107UV: "c",
+            N108UV: "c",
+            N109UV: "c",
+            N110UV: "c",
+            N112UV: "c",
+            N113UV: "c",
+            N114UV: "c",
+            N115UV: "c",
+            N116UV: "c",
+            N118UV: "c",
+            N119UV: "c",
+            N749DS: "c",
+            N779US: "c",
+            N793US: "c",
+            N4012X: "c"
+        };
+        const station_arm = {
+            oil: 39.4,
+            front_seats: 90.6,
+            rear_seats: 128.0,
+            wing_tanks: 103.5,
+            standard_baggage_compartment: 143.7,
+            standard_baggage_tube: 170.1,
+            extended_baggage_forward: 153.1,
+            extended_baggage_aft: 178.7
+        };
+        const station_max_value = {//this is the allowable value upper limits for a given station
+            standard_baggage_compartment: 66,
+            standard_baggage_tube: 0,//unknown and doesn't apply to any uvu aircraft
+            extended_baggage_forward: 100,
+            extended_baggage_aft: 40
+        };
+        const fuel_max_value = {
+            true: 50,
+            false: 40
+        };
+        const fuel_mass = 6.01;//lbs per gallon of fuel
+        const oil_mass = 1.86; //lbs per qt of oil
 
-        let aircraft = -1;
-        let empty_weight = 0;
-        let empty_cg = 0;
-        let max_gal = 50;
-
-        function updateWeight(new_weight) {
-            empty_weight = new_weight;
+        function load() {//called on load of the body
+            changeAircraft("ME");//'ME' stands for manual entry, which is the default selection.
         }
-        function updateCg(new_cg) {
-            empty_cg = new_cg;
-        }
-
         function changeAircraft(new_aircraft) {
+            //reference for input elements
             let empty_weight_element = document.getElementById("empty_weight");
             let empty_cg_element = document.getElementById("empty_cg");
+            let bag_weight_2_element = document.getElementById("bag_area_2");
+
+            //reference for max value tag elements
+            let max_bag_1_element = document.getElementById("max_bag_1");
+            let max_bag_2_element = document.getElementById("max_bag_2");
             let max_gal_element = document.getElementById("max_gal");
 
-            if (new_aircraft == -1) {
-                empty_weight_element.disabled = false;
-                empty_cg_element.disabled = false;
+            let using_preset = !(new_aircraft == "ME");//true when the user doesn't have [Manual Entry] selected
+            empty_weight_element.disabled = using_preset;
+            empty_cg_element.disabled = using_preset;
 
-                empty_weight = 0;
-                empty_cg = 0;
+            //retrieve weights from the preset constant values
+            empty_weight_element.value = aircraft_weight[new_aircraft];
+            empty_cg_element.value = aircraft_cg[new_aircraft];
+
+            //display bag limits
+            bag_weight_2_element.disabled = false;
+            if (aircraft_baggage_configuration[new_aircraft] == "c") {
+                max_bag_1_element.innerHTML = "lb (max " + station_max_value["extended_baggage_forward"] + "lb)";
+                max_bag_2_element.innerHTML = "lb (max " + station_max_value["extended_baggage_aft"] + "lb)";
             } else {
-                empty_weight_element.disabled = true;
-                empty_cg_element.disabled = true;
-
-                empty_weight = aircraft_weight[new_aircraft];
-                empty_cg = aircraft_cg[new_aircraft];
+                max_bag_1_element.innerHTML = "lb (max " + station_max_value["standard_baggage_compartment"] + "lb)";
+                if (aircraft_baggage_configuration[new_aircraft] == "b") {
+                    max_bag_2_element.innerHTML = "lb (max ?)";
+                } else {
+                    max_bag_2_element.innerHTML = "lb";
+                    bag_weight_2_element.disabled = true;
+                    bag_weight_2_element.value = "";
+                }
             }
 
-            empty_weight_element.value = empty_weight;
-            empty_cg_element.value = empty_cg;
+            //display fuel limits
+            max_gal_element.innerHTML = "gal (max " + fuel_max_value[aircraft_long_range_tank[new_aircraft]] + ")";
 
-            if (aircraft_long_range_tank[new_aircraft]) {
-                max_gal_element.innerHTML = "gal (max 50) (Long Range Tank)";
-            } else {
-                max_gal_element.innerHTML = "gal (max 40.2) (Standard Tank)";
-            }
         }
         function getAirport() {
             //case insensitive (prefer lowercase)
@@ -173,13 +226,22 @@
             //data collection variables
             let performance_input_page = document.getElementById("performance_input_page");
             let results_page = document.getElementById("results_page");
+            let header = document.getElementById("header");
 
-            let front_weight = document.getElementById("front_weight");
-            let front_weight_2 = document.getElementById("front_weight_2");
-            let rear_weight = document.getElementById("rear_weight");
-            let rear_weight_2 = document.getElementById("rear_weight_2");
-            let fuel = document.getElementById("fuel");
-            let fuel_use = document.getElementById("fuel_use");
+            let aircraft = document.getElementById("aircraft").value;
+            let empty_weight = Number(document.getElementById("empty_weight").value);
+            let empty_cg = Number(document.getElementById("empty_cg").value);
+
+            let front_weight = Number(document.getElementById("front_weight").value);
+            let front_weight_2 = Number(document.getElementById("front_weight_2").value);
+            let rear_weight = Number(document.getElementById("rear_weight").value);
+            let rear_weight_2 = Number(document.getElementById("rear_weight_2").value);
+            
+            let bag_weight = Number(document.getElementById("bag_area_1").value);
+            let bag_weight_2 = Number(document.getElementById("bag_area_2").value);
+
+            let fuel = Number(document.getElementById("fuel").value);
+            let fuel_use = Number(document.getElementById("fuel_use").value);
 
             let field_elevation = document.getElementById("field_elevation");
             let field_temperature = document.getElementById("field_temperature");
@@ -191,6 +253,7 @@
             //none yet
 
             //verify info is valid
+            //mostly negative checks here:
             if (empty_weight <= 0) {
                 alert("Weight is not a valid value. Must be positive.");
                 return;
@@ -199,7 +262,19 @@
                 alert("Arm is not a valid value. Must be positive.");
                 return;
             }
-            if (altimiter_setting.value < 0) {
+            if ((front_weight < 0) || (front_weight_2 < 0)) {
+                alert("Front Seats are not a valid value. Must be positive.");
+                return;
+            }
+            if ((rear_weight < 0) || (rear_weight_2 < 0)) {
+                alert("Rear Seats are not a valid value. Must be positive.");
+                return;
+            }
+            if ((bag_weight < 0) || (bag_weight_2 < 0)) {
+                alert("Baggage is not a valid value. Must be positive.");
+                return;
+            }
+            if (altimiter_setting.value <= 0) {
                 alert("Altimiter setting is not a valid value. Must be positive.");
                 return;
             }
@@ -207,30 +282,57 @@
                 alert("Please check the disclaimer box to continue.");
                 return;
             }
+            //check bag and fuel max
+            let max_bag_weight_1 = 0;
+            let max_bag_weight_2 = 0;
+            if (aircraft_baggage_configuration[aircraft] == "c") {
+                max_bag_weight_1 = station_max_value["extended_baggage_forward"];
+                max_bag_weight_2 = station_max_value["extended_baggage_aft"];
+            } else {
+                max_bag_weight_1 = station_max_value["standard_baggage_compartment"];
+                max_bag_weight_2 = station_max_value["standard_baggage_tube"];
+            }
+            if ((bag_weight > max_bag_weight_1) || (bag_weight_2 > max_bag_weight_2)) {
+                alert("Baggage exceeds maximum station weight.");
+                return;
+            }
+            if (fuel > fuel_max_value[aircraft_long_range_tank[aircraft]]) {
+                alert("Fuel quantity exceeds limits.");
+                return;
+            }
+            if (fuel_use > fuel) {
+                alert("Fuel use is greater than fuel available.");
+                return;
+            }
 
             //compute performance
-            let total_empty_weight = Number(empty_weight) + Number(front_weight.value) + Number(front_weight_2.value) + Number(rear_weight.value) + Number(rear_weight_2.value);
+            let total_empty_weight = empty_weight + front_weight + front_weight_2 + rear_weight + rear_weight_2 + bag_weight + bag_weight_2 + (fuel*fuel_mass) - (2*oil_mass);
+
 
             //display results
+            //header
+            var date = new Date();
+            header.innerHTML = "<button onclick='back()'>←Go Back</button>&nbsp;Generated " + (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getUTCHours() + ":" + date.getUTCMinutes() + "Z [You may screenshot this page]";
+            
             performance_input_page.style.display = "none";
             results_page.style.display = "block";
-
-
-            alert("Presly's plane is large and weighs " + total_empty_weight + " lbs");
-
             
 
+        }
+        function back() {
+            performance_input_page.style.display = "block";
+            results_page.style.display = "none";
         }
         
     </script>
   </head>
 
-<body>
+<body onload="load();">
     <div id="performance_input_page" style="display:block;max-width:600px;margin:auto;">
         <div style="display: flex;justify-content: center;">
             <img src="images/logo.png" alt="PPC Logo" style="max-width: 200px;">
         </div>
-        <p>This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM.</p>
+        <p>This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. For simplicity, oil is assumed to be 6qts.</p>
         <h3>Enter performance parameters (DA40)</h3>
 
         <h4>-Select Aircraft-</h4>
@@ -239,7 +341,7 @@
                 <td><label for="aircraft">Identifier:</label></td>
                 <td>
                     <select id="aircraft" onchange="changeAircraft(this.value);">
-                        <option value="-1">[Manual Entry]</option>
+                        <option value="ME">[Manual Entry]</option>
                         <option value="N103UV">N103UV</option>
                         <option value="N104UV">N104UV</option>
                         <option value="N105UV">N105UV</option>
@@ -265,12 +367,12 @@
             </tr>
             <tr>
                 <td><label for="empty_weight">Empty Weight:</label></td>
-                <td><input type="number" id="empty_weight" value="0" onchange="updateWeight(this.value);"></td>
+                <td><input type="number" id="empty_weight"></td>
                 <td>lb</td>
             </tr>
             <tr>
                 <td><label for="empty_cg">Empty Arm:</label></td>
-                <td><input type="number" id="empty_cg" value="0" onchange="updateCg(this.value);"></td>
+                <td><input type="number" id="empty_cg"></td>
                 <td>in</td>
             </tr>
         </table><br>
@@ -298,9 +400,14 @@
                 <td>lb</td>
             </tr>
             <tr>
-                <td><label for="standard_bag_weight">Standard Bag Comp:</label></td>
-                <td><input type="number" id="standard_bag_weight" name="standard_bag_weight"></td>
-                <td>lb</td>
+                <td><label for="bag_area_1">Forward Baggage:</label></td>
+                <td><input type="number" id="bag_area_1" name="bag_area_1"></td>
+                <td id="max_bag_1">lb</td>
+            </tr>
+            <tr>
+                <td><label for="bag_area_2">Aft Baggage:</label></td>
+                <td><input type="number" id="bag_area_2" name="bag_area_2"></td>
+                <td id="max_bag_2">lb</td>
             </tr>
             <tr>
                 <td><label for="fuel">Starting Fuel:</label></td>
@@ -324,7 +431,7 @@
             </tr>
             <tr>
                 <td><label for="field_elevation">Field Elevation:</label></td>
-                <td><input type="number" id="field_elevation" name="field_elevation" value="0"></td>
+                <td><input type="number" id="field_elevation" name="field_elevation" value="4500"></td>
                 <td>ft</td>
             </tr>
             <tr>
@@ -342,8 +449,8 @@
         <input id="disclaimer" type="checkbox"><br><br>
         <button onclick="calculatePerformance()">Calculate Performance</button>
     </div>
-    <div id="results_page" style="display:none;">
-        Results!
+    <div id="results_page" style="display:block;">
+        <div id="header"></div>
     </div>
 </body>
 </html>
