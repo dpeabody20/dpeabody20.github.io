@@ -28,6 +28,12 @@
             background-color: rgb(140, 189, 220);
             color:rgb(69, 71, 72);
         }
+        .subscript {
+            font-size:20px;
+        }
+        .numberLabel {
+            font-size:24px;
+        }
         
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -167,7 +173,7 @@
         };
         const fuel_mass = 6.01;//lbs per gallon of fuel
         const oil_mass = 1.86; //lbs per qt of oil
-
+        const taxi_fuel_burn = 0.5;//in gallons
         function load() {//called on load of the body
             changeAircraft("ME");//'ME' stands for manual entry, which is the default selection.
         }
@@ -249,8 +255,6 @@
 
             let disclaimer = document.getElementById("disclaimer");
             
-            //data display variables
-            //none yet
 
             //verify info is valid
             //mostly negative checks here:
@@ -305,23 +309,149 @@
                 return;
             }
 
-            //compute performance
-            let total_empty_weight = empty_weight + front_weight + front_weight_2 + rear_weight + rear_weight_2 + bag_weight + bag_weight_2 + (fuel*fuel_mass) - (2*oil_mass);
+            //compute weight and balance
+            let total_ZF_weight = empty_weight + front_weight + front_weight_2 + rear_weight + rear_weight_2 + bag_weight + bag_weight_2 - (2*oil_mass);
+            let total_ramp_weight =  total_ZF_weight + (fuel*fuel_mass);
+            let total_takeoff_weight = total_ramp_weight - (taxi_fuel_burn * fuel_mass);
+            let total_landing_weight = total_ramp_weight - (fuel_use*fuel_mass);
 
+            let ZF_moment = (empty_weight * empty_cg) + ((front_weight+front_weight_2) * station_arm["front_seats"]) + ((rear_weight+rear_weight_2) * station_arm["rear_seats"]) - (2*oil_mass*station_arm["oil"]);
+
+            if (aircraft_baggage_configuration[aircraft] == "c") {
+                ZF_moment += (bag_weight * station_arm["extended_baggage_forward"]) + (bag_weight_2 * station_arm["extended_baggage_aft"]);
+            } else {
+                ZF_moment += (bag_weight * station_arm["standard_baggage_compartment"]) + (bag_weight_2 * station_arm["standard_baggage_tube"]);
+            }
+
+            let ramp_moment = ZF_moment + (fuel * fuel_mass * station_arm["wing_tanks"]);
+            let takeoff_moment = ramp_moment - (taxi_fuel_burn * fuel_mass * station_arm["wing_tanks"]);
+            let landing_moment = ramp_moment - (fuel_use * fuel_mass * station_arm["wing_tanks"]);
+
+            let ZF_cg = ZF_moment / total_ZF_weight;
+            let ramp_cg = ramp_moment / total_ramp_weight;
+            let takeoff_cg = takeoff_moment / total_takeoff_weight;
+            let landing_cg = landing_moment / total_landing_weight;
 
             //display results
             //header
-            var date = new Date();
+            let date = new Date();
             header.innerHTML = "<button onclick='back()'>←Go Back</button>&nbsp;Generated " + (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getUTCHours() + ":" + date.getUTCMinutes() + "Z [You may screenshot this page]";
             
+            //weight and balance chart
+            draw_weight_and_balance_setting();
+            draw_envelope(aircraft_long_range_tank[aircraft]);
+            draw_aircraft(total_ramp_weight, ramp_cg, total_landing_weight, landing_cg, total_ZF_weight, ZF_cg);
+            //weight and balance numbers
+            document.getElementById("rampWeight").innerHTML = Math.round(total_ramp_weight);
+            document.getElementById("toWeight").innerHTML = Math.round(total_takeoff_weight);
+            document.getElementById("ldgWeight").innerHTML = Math.round(total_landing_weight);
+            document.getElementById("ZFWeight").innerHTML = Math.round(total_ZF_weight);
+            //show the div!
             performance_input_page.style.display = "none";
             results_page.style.display = "block";
+
+
+            console.log(total_ZF_weight);
+            console.log(total_takeoff_weight);
+            console.log(total_landing_weight);
+            console.log(ZF_cg);
+            console.log(takeoff_cg);
+            console.log(landing_cg);
             
 
         }
         function back() {
             performance_input_page.style.display = "block";
             results_page.style.display = "none";
+        }
+        function tx(x) {//convert x value in in to px of the canvas
+            return (x-93)*32 + 60;
+        }
+        function ty(y) {//convert x value in lb to px of the canvas
+            return 260 - ((y-1600)*0.183);
+        }
+        function draw_aircraft(to_weight, to_cg, ldg_weight, ldg_cg, zero_weight, zero_cg) {
+            let c = document.getElementById("W&B");
+            let ctx = c.getContext("2d");
+            ctx.strokeStyle = "#ffffff";
+
+            ctx.beginPath();
+            ctx.moveTo(tx(to_cg),ty(to_weight));
+            ctx.lineTo(tx(ldg_cg),ty(ldg_weight));
+            ctx.lineTo(tx(zero_cg),ty(zero_weight));
+            ctx.stroke();
+        }
+        function draw_envelope(long_range_tank) {//draws the envelope on the graph based on whether it's a long range tank or not.
+            let c = document.getElementById("W&B");
+            let ctx = c.getContext("2d");
+            ctx.strokeStyle = "#aaaaaa";
+
+            let aft_max_cg = 102.0;
+            if (long_range_tank) {
+                aft_max_cg = 100.4
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(tx(94.5),ty(1720));
+            ctx.lineTo(tx(94.5),ty(2161));
+            ctx.lineTo(tx(97.6),ty(2646));
+            ctx.lineTo(tx(aft_max_cg),ty(2646));
+            ctx.lineTo(tx(aft_max_cg),ty(1720));
+            ctx.lineTo(tx(94.5),ty(1720));
+            ctx.stroke();
+        }
+        function draw_weight_and_balance_setting() {//400x300 canvas cg 93-103 (10range over 320px = 32px/in). weight 1600-2800 (1200 range over 220px = 0.183px per lb)
+            let c = document.getElementById("W&B");
+            let ctx = c.getContext("2d");
+            ctx.strokeStyle = "#ffffff";
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "15px Arial";
+
+            ctx.clearRect(0,0,400,300);
+
+            ctx.beginPath();
+            ctx.moveTo(tx(103),ty(1600));
+            ctx.lineTo(tx(93),ty(1600));
+            ctx.lineTo(tx(93),ty(2800));
+            
+
+            //horizontal axis
+            ctx.fillText("GC pos. (in)", 150, 295);
+            for (let i = 94; i< 103; i+=2) {
+                //ctx.moveTo(tx(i),ty(lb));
+                //ctx.lineTo(tx(i),ty(ub));
+                ctx.fillText(i, tx(i)-10, ty(1600)+18);
+            }
+
+            //vertical axis
+            ctx.fillText("Weight (lb)", 5, 20);
+            for (let i = 8; i<= 14; i++) {
+                //ctx.moveTo(tx(lb),ty(i*200));
+                //ctx.lineTo(tx(ub),ty(i*200));
+                ctx.fillText(i*200, tx(93)-40, ty(i*200)+5);
+            }
+
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.strokeStyle = "#555555";
+            
+            let ub = 2800;
+            let lb = 1600;
+            for (let i = 94; i<= 103; i++) {
+                ctx.moveTo(tx(i),ty(lb));
+                ctx.lineTo(tx(i),ty(ub));
+            }
+            
+
+            ub = 103;
+            lb = 93;
+            for (let i = 9; i<= 14; i++) {
+                ctx.moveTo(tx(lb),ty(i*200));
+                ctx.lineTo(tx(ub),ty(i*200));
+            }
+            ctx.stroke();
+            
         }
         
     </script>
@@ -449,8 +579,69 @@
         <input id="disclaimer" type="checkbox"><br><br>
         <button onclick="calculatePerformance()">Calculate Performance</button>
     </div>
-    <div id="results_page" style="display:block;">
-        <div id="header"></div>
+    <div id="results_page"  style="display:none;width:600px;margin:auto;">
+        <div id="header"></div><br>
+            <table style="width:200px;font-size:32px;float:right;">
+                <tr>
+                    <td style="color:aquamarine;">V<sub class="subscript">GLIDE</sub></td>
+                    <td id="Vg" style="color:aquamarine;"><u>00</u></td>
+                </tr>
+                <tr>
+                    <td>V<sub class="subscript">R</sub></td>
+                    <td>59</td>
+                </tr>
+                <tr>
+                    <td>V<sub class="subscript">Y</sub></td>
+                    <td id="Vy">00</td>
+                </tr>
+                <tr>
+                    <td>V<sub class="subscript">Cruise Climb</sub></td>
+                    <td id="Vcruise_climb">00</td>
+                </tr>
+                <tr>
+                    <td>V<sub class="subscript">A</sub></td>
+                    <td id="Va">100</td>
+                </tr>
+                <tr>
+                    <td>V<sub class="subscript">REF</sub></td>
+                    <td id="Vref">00</td>
+                </tr>
+            </table>
+            <div style="width:400px;font-size:32px;float: left; text-align: right;">
+                <table>
+                    <tr>
+                        <td class="numberLabel">Takeoff Distance:</td>
+                        <td id="toDist">0000</td>
+                        <td class="numberLabel">&nbsp;/50':</td>
+                        <td id="toDist">0000</td>
+                    </tr>
+                    <tr>
+                        <td class="numberLabel">Landing Distance:</td>
+                        <td id="toDist">0000</td>
+                        <td class="numberLabel">&nbsp;/50':</td>
+                        <td id="toDist">0000</td>
+                    </tr>
+                </table><br>
+                <table>
+                    <tr>
+                        <td class="numberLabel">Ramp Weight:</td>
+                        <td id="rampWeight">0000</td>
+                    </tr>
+                    <tr>
+                        <td class="numberLabel">Takeoff Weight:</td>
+                        <td id="toWeight">0000</td>
+                    </tr>
+                    <tr>
+                        <td class="numberLabel">Landing Weight:</td>
+                        <td id="ldgWeight">0000</td>
+                    </tr>
+                    <tr>
+                        <td class="numberLabel">Zero Fuel Weight:</td>
+                        <td id="ZFWeight">0000</td>
+                    </tr>
+                </table>
+            </div>
+        <canvas id="W&B" width="400" height="300" style="background-color: rgb(37, 39, 42);"></canvas>
     </div>
 </body>
 </html>
