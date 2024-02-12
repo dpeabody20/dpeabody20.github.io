@@ -106,6 +106,7 @@
             N4012X: 2535
         };
         const aircraft_max_takeoff_weight = 2646;
+        const aircraft_utility_category_max_weight = 2161;
         const aircraft_long_range_tank = {
             ME: true,
             N103UV: true,
@@ -130,7 +131,7 @@
         };
         //classifies the baggage configuration - See AFM 6-6.
         const aircraft_baggage_configuration = {
-            ME: "a",
+            ME: "b",
             N103UV: "a",
             N104UV: "a",
             N105UV: "c",
@@ -159,21 +160,32 @@
             standard_baggage_compartment: 143.7,
             standard_baggage_tube: 170.1,
             extended_baggage_forward: 153.1,
-            extended_baggage_aft: 178.7
+            extended_baggage_aft: 178.7,
         };
         const station_max_value = {//this is the allowable value upper limits for a given station
             standard_baggage_compartment: 66,
-            standard_baggage_tube: 0,//unknown and doesn't apply to any uvu aircraft
+            standard_baggage_tube: 11,
             extended_baggage_forward: 100,
-            extended_baggage_aft: 40
+            extended_baggage_aft: 40,
+            extended_baggage_total: 100
         };
-        const fuel_max_value = {
+        const fuel_max_value = {//ture if long range tank
             true: 50,
-            false: 40
+            false: 40.2
         };
+        const aft_max_cg_value = {//true if long range tank
+            true: 100.4,
+            false: 102.0
+        };
+
         const fuel_mass = 6.01;//lbs per gallon of fuel
         const oil_mass = 1.86; //lbs per qt of oil
         const taxi_fuel_burn = 0.5;//in gallons
+
+        const takeoff_color = "#40B240";
+        const landing_color = "#EDE23D";
+        const zero_color = "#549DC8";
+
         function load() {//called on load of the body
             changeAircraft("ME");//'ME' stands for manual entry, which is the default selection.
         }
@@ -204,7 +216,7 @@
             } else {
                 max_bag_1_element.innerHTML = "lb (max " + station_max_value["standard_baggage_compartment"] + "lb)";
                 if (aircraft_baggage_configuration[new_aircraft] == "b") {
-                    max_bag_2_element.innerHTML = "lb (max ?)";
+                    max_bag_2_element.innerHTML = "lb (max " + station_max_value["standard_baggage_tube"] + "lb)";
                 } else {
                     max_bag_2_element.innerHTML = "lb";
                     bag_weight_2_element.disabled = true;
@@ -255,6 +267,10 @@
 
             let disclaimer = document.getElementById("disclaimer");
             
+            //display variables
+            let toWeight = document.getElementById("toWeight")
+            let ldgWeight = document.getElementById("ldgWeight")
+            let ZFWeight = document.getElementById("ZFWeight")
 
             //verify info is valid
             //mostly negative checks here:
@@ -292,12 +308,16 @@
             if (aircraft_baggage_configuration[aircraft] == "c") {
                 max_bag_weight_1 = station_max_value["extended_baggage_forward"];
                 max_bag_weight_2 = station_max_value["extended_baggage_aft"];
+                if (bag_weight + bag_weight_2 > station_max_value["extended_baggage_total"]) {
+                    alert("Baggage exceeds maximum station weight. Forward and aft cannot be greater than 100lb combined. AFM 2-11");
+                    return;
+                }
             } else {
                 max_bag_weight_1 = station_max_value["standard_baggage_compartment"];
                 max_bag_weight_2 = station_max_value["standard_baggage_tube"];
             }
             if ((bag_weight > max_bag_weight_1) || (bag_weight_2 > max_bag_weight_2)) {
-                alert("Baggage exceeds maximum station weight.");
+                alert("Baggage exceeds maximum station weight. AFM 2-11");
                 return;
             }
             if (fuel > fuel_max_value[aircraft_long_range_tank[aircraft]]) {
@@ -339,13 +359,18 @@
             
             //weight and balance chart
             draw_weight_and_balance_setting();
-            draw_envelope(aircraft_long_range_tank[aircraft]);
-            draw_aircraft(total_ramp_weight, ramp_cg, total_landing_weight, landing_cg, total_ZF_weight, ZF_cg);
+            draw_envelope(aircraft);
+            draw_aircraft(total_ramp_weight, ramp_cg, total_landing_weight, landing_cg, total_ZF_weight, ZF_cg, aircraft);
+            
             //weight and balance numbers
-            document.getElementById("rampWeight").innerHTML = Math.round(total_ramp_weight);
-            document.getElementById("toWeight").innerHTML = Math.round(total_takeoff_weight);
-            document.getElementById("ldgWeight").innerHTML = Math.round(total_landing_weight);
-            document.getElementById("ZFWeight").innerHTML = Math.round(total_ZF_weight);
+            toWeight.innerHTML = Math.round(total_takeoff_weight);
+            ldgWeight.innerHTML = Math.round(total_landing_weight);
+            ZFWeight.innerHTML = Math.round(total_ZF_weight);
+
+            toWeight.style.color = takeoff_color;
+            ldgWeight.style.color = landing_color;
+            ZFWeight.style.color = zero_color;
+            
             //show the div!
             performance_input_page.style.display = "none";
             results_page.style.display = "block";
@@ -370,27 +395,85 @@
         function ty(y) {//convert x value in lb to px of the canvas
             return 260 - ((y-1600)*0.183);
         }
-        function draw_aircraft(to_weight, to_cg, ldg_weight, ldg_cg, zero_weight, zero_cg) {
+        function draw_aircraft(to_weight, to_cg, ldg_weight, ldg_cg, zero_weight, zero_cg, aircraft) {
             let c = document.getElementById("W&B");
             let ctx = c.getContext("2d");
+            ctx.lineWidth = 1;
             ctx.strokeStyle = "#ffffff";
+            ctx.setLineDash([]);
+            
 
+            
+            //line connecting cgs for fuel
             ctx.beginPath();
             ctx.moveTo(tx(to_cg),ty(to_weight));
             ctx.lineTo(tx(ldg_cg),ty(ldg_weight));
             ctx.lineTo(tx(zero_cg),ty(zero_weight));
             ctx.stroke();
+
+            ctx.lineWidth = 4;
+            //takeoff
+            ctx.strokeStyle = "#40B240";
+            ctx.beginPath();
+            ctx.arc(tx(to_cg),ty(to_weight), 2, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            //landing
+            ctx.strokeStyle = "#EDE23D";
+            ctx.beginPath();
+            ctx.arc(tx(ldg_cg),ty(ldg_weight), 2, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            //zero fuel
+            ctx.strokeStyle = "#549DC8";
+            ctx.beginPath();
+            ctx.arc(tx(zero_cg),ty(zero_weight), 2, 0, 2 * Math.PI);
+            ctx.stroke();
         }
-        function draw_envelope(long_range_tank) {//draws the envelope on the graph based on whether it's a long range tank or not.
+        function draw_envelope(aircraft) {//draws the envelope on the graph based on whether it's a long range tank or not.
             let c = document.getElementById("W&B");
             let ctx = c.getContext("2d");
-            ctx.strokeStyle = "#aaaaaa";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([10, 15]);
+            ctx.font = "12px Arial";
+            ctx.fillStyle = "#FF9EFF";
+            ctx.strokeStyle = "#FF9EFF";
 
-            let aft_max_cg = 102.0;
-            if (long_range_tank) {
-                aft_max_cg = 100.4
+            let aft_max_cg = aft_max_cg_value[aircraft_long_range_tank[aircraft]];
+            let xpos = 286;
+            if (aircraft_long_range_tank[aircraft]) {
+                xpos = 305;
             }
 
+            //utility max line
+            ctx.beginPath();
+            ctx.moveTo(tx(93),ty(aircraft_utility_category_max_weight));
+            ctx.lineTo(tx(103),ty(aircraft_utility_category_max_weight));
+            ctx.stroke();
+            ctx.fillText("Utility Max", xpos, ty(aircraft_utility_category_max_weight)+14);
+
+            //landing max line
+            ctx.fillStyle = "#73C3DA";
+            ctx.strokeStyle = "#73C3DA";
+            ctx.beginPath();
+            ctx.moveTo(tx(93),ty(aircraft_max_landing_weight[aircraft]));
+            ctx.lineTo(tx(103),ty(aircraft_max_landing_weight[aircraft]));
+            ctx.stroke();
+            ctx.fillText("Landing Max", 70, ty(aircraft_max_landing_weight[aircraft])+14);
+
+            //takeoff max line
+            ctx.fillStyle = "#FFFFFF";
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.moveTo(tx(93),ty(aircraft_max_takeoff_weight));
+            ctx.lineTo(tx(103),ty(aircraft_max_takeoff_weight));
+            ctx.stroke();
+            ctx.fillText("Takeoff Max", 70, ty(aircraft_max_takeoff_weight)+14);
+
+            //envelope
+            ctx.setLineDash([]);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#FFFFFF";
             ctx.beginPath();
             ctx.moveTo(tx(94.5),ty(1720));
             ctx.lineTo(tx(94.5),ty(2161));
@@ -405,7 +488,9 @@
             let ctx = c.getContext("2d");
             ctx.strokeStyle = "#ffffff";
             ctx.fillStyle = "#ffffff";
+            ctx.lineWidth = 1;
             ctx.font = "15px Arial";
+            ctx.setLineDash([]);
 
             ctx.clearRect(0,0,400,300);
 
@@ -462,7 +547,7 @@
         <div style="display: flex;justify-content: center;">
             <img src="images/logo.png" alt="PPC Logo" style="max-width: 200px;">
         </div>
-        <p>This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. For simplicity, oil is assumed to be 6qts.</p>
+        <p>(V0.2) This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. For simplicity, oil is assumed to be 6qts.</p>
         <h3>Enter performance parameters (DA40)</h3>
 
         <h4>-Select Aircraft-</h4>
@@ -624,10 +709,6 @@
                 </table><br>
                 <table>
                     <tr>
-                        <td class="numberLabel">Ramp Weight:</td>
-                        <td id="rampWeight">0000</td>
-                    </tr>
-                    <tr>
                         <td class="numberLabel">Takeoff Weight:</td>
                         <td id="toWeight">0000</td>
                     </tr>
@@ -641,7 +722,7 @@
                     </tr>
                 </table>
             </div>
-        <canvas id="W&B" width="400" height="300" style="background-color: rgb(37, 39, 42);"></canvas>
+        <canvas id="W&B" width="400" height="300" style="background-color:rgb(21, 28, 30)"></canvas>
     </div>
 </body>
 </html>
