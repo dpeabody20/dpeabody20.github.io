@@ -128,7 +128,7 @@ const station_max_value = {//this is the allowable value upper limits for a give
     extended_baggage_aft: 40,
     extended_baggage_total: 100
 };
-const fuel_max_value = {//ture if long range tank
+const fuel_max_value = {//true if long range tank
     true: 50,
     false: 40.2
 };
@@ -136,6 +136,17 @@ const aft_max_cg_value = {//true if long range tank
     true: 100.4,
     false: 102.0
 };
+const forward_max_cg_value = 94.5
+
+const aircraft_speed_data = {
+    weights: [1874, 2205, 2535, 2646],
+    Vglide: [60, 68, 73, 76],
+    Vy: [54, 60, 66, 67],
+    Vcc: [60, 68, 73, 76],
+    Vapp: [58, 63, 71, 73]
+}
+
+const Va_max = 111;
 
 const takeoff_atmospheric_data = {//consists of many data points for the first section of the takeoff calculation graph. Linear interpolation is used to find more precice values from this data.
     altitude: [0, 2000, 4000, 6000, 8000, 10000],
@@ -150,6 +161,16 @@ const takeoff_atmospheric_data = {//consists of many data points for the first s
     ]
 }
 
+const takeoff_weight_data = {
+    weight: [2645.544, 2204.62, 1873.927],//this is the second index of data, which determines the x axis value. or weight of acft. The first index of the data is the line number l=0,1,2, or 3
+    data: [
+        [2.3724428, 1.1620128, 0.4115462],
+        [3.7765416, 1.9124794, 1.3798902],
+        [5.9068984, 3.1955352, 2.057731],
+        [9.68344, 5.0353888, 3.389204]
+    ]
+}
+
 const fuel_mass = 6.01;//lbs per gallon of fuel
 const oil_mass = 1.86; //lbs per qt of oil
 const taxi_fuel_burn = 0.5;//in gallons
@@ -157,3 +178,5 @@ const taxi_fuel_burn = 0.5;//in gallons
 const takeoff_color = "#40B240";
 const landing_color = "#EDE23D";
 const zero_color = "#549DC8";
+
+const caution_number_color = "#FF2E2E";

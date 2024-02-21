@@ -40,7 +40,7 @@
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="aircraft_data.js"></script>
-    <script src="PPC.js"></script>
+    <script src="ppc.js"></script>
   </head>
 
 <body onload="load();">
@@ -48,7 +48,7 @@
         <div style="display: flex;justify-content: center;">
             <img src="images/logo.png" alt="PPC Logo" style="max-width: 200px;">
         </div>
-        <p>(V0.4) This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. For simplicity, oil is assumed to be 6qts.</p>
+        <p>(V0.6) This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. The following assumptions are made: wind is 0kts (a headwind will only improve takeoff performance), level-asphalt runway, landing distance is for takeoff weight, V-speeds are calculated using takeoff weight (with the exception of Va which uses landing weight), and oil is at 6qts. For cross country trips, performance should be calculated for both departure and destination.</p>
         <h3>Enter performance parameters (DA40)</h3>
 
         <h4>-Select Aircraft-</h4>
@@ -165,12 +165,12 @@
         <input id="disclaimer" type="checkbox"><br><br>
         <button onclick="calculatePerformance()">Calculate Performance</button>
     </div>
-    <div id="results_page"  style="display:none;max-width:600px;margin:auto;">
+    <div id="results_page"  style="display:none;width:600px;margin:auto;">
         <div id="header" style="width: 600px;"></div><br>
             <table style="width:200px;font-size:32px;float:right;">
                 <tr>
                     <td style="color:aquamarine;">V<sub class="subscript">GLIDE</sub></td>
-                    <td id="Vg" style="color:aquamarine;"><u>00</u></td>
+                    <td id="Vglide" style="color:aquamarine;"><u>00</u></td>
                 </tr>
                 <tr>
                     <td>V<sub class="subscript">R</sub></td>
@@ -182,44 +182,44 @@
                 </tr>
                 <tr>
                     <td>V<sub class="subscript">Cruise Climb</sub></td>
-                    <td id="Vcruise_climb">00</td>
+                    <td id="Vcc">00</td>
                 </tr>
                 <tr>
                     <td>V<sub class="subscript">A</sub></td>
-                    <td id="Va">100</td>
+                    <td id="Va">94</td>
                 </tr>
                 <tr>
                     <td>V<sub class="subscript">REF</sub></td>
-                    <td id="Vref">00</td>
+                    <td id="Vapp">00</td>
                 </tr>
             </table>
             <div style="width:400px;font-size:32px;float: left; text-align: right;">
                 <table>
                     <tr>
                         <td class="numberLabel">Takeoff Distance:</td>
-                        <td id="toDist">0000</td>
+                        <td id="toDist">INOP</td>
                         <td class="numberLabel">&nbsp;/50':</td>
-                        <td id="toDist">0000</td>
+                        <td id="toDist50">INOP</td>
                     </tr>
                     <tr>
                         <td class="numberLabel">Landing Distance:</td>
-                        <td id="toDist">0000</td>
+                        <td id="ldgDist">INOP</td>
                         <td class="numberLabel">&nbsp;/50':</td>
-                        <td id="toDist">0000</td>
+                        <td id="ldgDist50">INOP</td>
                     </tr>
                 </table><br>
                 <table>
                     <tr>
-                        <td class="numberLabel">Takeoff Weight:</td>
-                        <td id="toWeight">0000</td>
+                        <td id="toWeightText" class="numberLabel">Takeoff Weight:</td>
+                        <td id="toWeight">INOP</td>
                     </tr>
                     <tr>
-                        <td class="numberLabel">Landing Weight:</td>
-                        <td id="ldgWeight">0000</td>
+                        <td id="ldgWeightText" class="numberLabel">Landing Weight:</td>
+                        <td id="ldgWeight">INOP</td>
                     </tr>
                     <tr>
-                        <td class="numberLabel">Zero Fuel Weight:</td>
-                        <td id="ZFWeight">0000</td>
+                        <td id="ZFWeightText" class="numberLabel">Zero Fuel Weight:</td>
+                        <td id="ZFWeight">INOP</td>
                     </tr>
                 </table>
             </div>
