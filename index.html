@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peabody's Performance Calculator</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <meta name="viewport" content="width=700, user-scalable=1">
     <style>
         body {
             background-color: rgb(21, 28, 30);
@@ -178,6 +180,19 @@
             false: 102.0
         };
 
+        const takeoff_atmospheric_data = {//consists of many data points for the first section of the takeoff calculation graph. Linear interpolation is used to find more precice values from this data.
+            altitude: [0, 2000, 4000, 6000, 8000, 10000],
+            temp: [-20, -10, 0, 10, 20, 30, 40, 50],
+            data: [ //altitude is the first index, temperature is the second
+                [1.089387, 1.2830558, 1.5977676, 1.8640622, 2.2756084, 2.6387374, 2.9776578, 3.4134126],
+                [1.6461848, 1.9124794, 2.2756084, 2.5903202, 3.026075, 3.4618298, 3.9702104, 4.5270082],
+                [2.3724428, 2.6871546, 3.0987008, 3.510247, 4.1396706, 4.7448856, 5.325892, 5.9795242],
+                [3.0987008, 3.5828728, 4.1396706, 4.84172, 5.5921866, 6.3910704, 7.3594144, 8.5698444],
+                [4.0912534, 4.9385544, 5.7858554, 6.7299908, 7.8435864, 9.1750594, 11.2085818, 13.9683622],
+                [5.8342726, 6.778408, 7.8435864, 9.1750594, 11.1843732, 13.7262762]
+            ]
+        }
+
         const fuel_mass = 6.01;//lbs per gallon of fuel
         const oil_mass = 1.86; //lbs per qt of oil
         const taxi_fuel_burn = 0.5;//in gallons
@@ -261,9 +276,9 @@
             let fuel = Number(document.getElementById("fuel").value);
             let fuel_use = Number(document.getElementById("fuel_use").value);
 
-            let field_elevation = document.getElementById("field_elevation");
-            let field_temperature = document.getElementById("field_temperature");
-            let altimiter_setting = document.getElementById("altimiter_setting");
+            let field_elevation = Number(document.getElementById("field_elevation").value);
+            let field_temperature = Number(document.getElementById("field_temperature").value);
+            let altimiter_setting = Number(document.getElementById("altimiter_setting").value);
 
             let disclaimer = document.getElementById("disclaimer");
             
@@ -328,6 +343,14 @@
                 alert("Fuel use is greater than fuel available.");
                 return;
             }
+            if (field_elevation < -1000 || field_elevation > 12000) {
+                alert("Field Elevation must be within the bounds [-1000, 12000]");
+                return;
+            }
+            if (field_temperature < -40 || field_temperature > 50) {
+                alert("Temperature must be within the bounds [-40, 50]");
+                return;
+            }
 
             //compute weight and balance
             let total_ZF_weight = empty_weight + front_weight + front_weight_2 + rear_weight + rear_weight_2 + bag_weight + bag_weight_2 - (2*oil_mass);
@@ -352,6 +375,59 @@
             let takeoff_cg = takeoff_moment / total_takeoff_weight;
             let landing_cg = landing_moment / total_landing_weight;
 
+            //compute performance
+            let pressure_altitude = field_elevation + ((altimiter_setting - 29.92) * -930);
+            pressure_altitude = field_elevation;
+            //takeoff
+            //let takeoff_atmospheric_parameter = (0.183908 * Math.exp(0.000303751 * pressure_altitude) + 3.34675) * Math.exp((0.00695801 * Math.exp(0.0000987383 * pressure_altitude) + 0.00108574) * field_temperature) + (0.00028 * pressure_altitude) - 2;
+            
+            //console.log("atmospheric parameter: " + takeoff_atmospheric_parameter);
+
+            //this finds the two closest pressure altitude and temperature values in the available dataset to linearly interpolate from
+            let pressure_index_1 = 0;
+            let pressure_index_2 = takeoff_atmospheric_data["altitude"].length - 1;
+            //find lower bound for pressure
+            for (let i = 0; i < takeoff_atmospheric_data["altitude"].length - 1; i++) {
+                if (pressure_altitude >= takeoff_atmospheric_data["altitude"][i]) {
+                    pressure_index_1 = i;
+                }
+            }
+            //find upper bound for pressure
+            for (let i = takeoff_atmospheric_data["altitude"].length - 1; i > 0; i--) {
+                if (pressure_altitude < takeoff_atmospheric_data["altitude"][i]) {
+                    pressure_index_2 = i;
+                }
+            }
+            let temp_index_1 = 0;
+            let temp_index_2 = takeoff_atmospheric_data["temp"].length - 1;
+            //find lower bound for pressure
+            for (let i = 0; i < takeoff_atmospheric_data["temp"].length - 1; i++) {
+                if (field_temperature >= takeoff_atmospheric_data["temp"][i]) {
+                    temp_index_1 = i;
+                }
+            }
+            //find upper bound for pressure
+            for (let i = takeoff_atmospheric_data["temp"].length - 1; i > 0; i--) {
+                if (field_temperature < takeoff_atmospheric_data["temp"][i]) {
+                    temp_index_2 = i;
+                }
+            }
+            //linearly interpolate to find takeoff parameter for both the higher and lower altitude lines.
+            let lower_atmospheric_parameter = linear_interpolate(takeoff_atmospheric_data["temp"][temp_index_1], takeoff_atmospheric_data["temp"][temp_index_2], takeoff_atmospheric_data["data"][pressure_index_1][temp_index_1], takeoff_atmospheric_data["data"][pressure_index_1][temp_index_2], field_temperature);
+            let upper_atmospheric_parameter = 0;
+            if (field_temperature >= 30 && pressure_altitude >= 8000) { //this is an edge case since we don't have data beyond 30C for the 10000 line
+                upper_atmospheric_parameter = linear_interpolate(takeoff_atmospheric_data["temp"][4], takeoff_atmospheric_data["temp"][5], takeoff_atmospheric_data["data"][pressure_index_2][4], takeoff_atmospheric_data["data"][pressure_index_2][5], field_temperature);
+            } else {//this will run most of the time for sure!
+                upper_atmospheric_parameter = linear_interpolate(takeoff_atmospheric_data["temp"][temp_index_1], takeoff_atmospheric_data["temp"][temp_index_2], takeoff_atmospheric_data["data"][pressure_index_2][temp_index_1], takeoff_atmospheric_data["data"][pressure_index_2][temp_index_2], field_temperature);
+            }
+            //now interpolate between 2 pressure altitude lines to find the parameter
+            let takeoff_atmospheric_parameter = linear_interpolate(takeoff_atmospheric_data["altitude"][pressure_index_1], takeoff_atmospheric_data["altitude"][pressure_index_2], lower_atmospheric_parameter, upper_atmospheric_parameter, pressure_altitude);
+            
+            if (takeoff_atmospheric_parameter > 13) {//check that a safe takeoff can be made
+                alert("Density altitude is too high for a predictable takeoff under any weight.");
+                return;
+            }
+
             //display results
             //header
             let date = new Date();
@@ -375,19 +451,15 @@
             performance_input_page.style.display = "none";
             results_page.style.display = "block";
 
-
-            console.log(total_ZF_weight);
-            console.log(total_takeoff_weight);
-            console.log(total_landing_weight);
-            console.log(ZF_cg);
-            console.log(takeoff_cg);
-            console.log(landing_cg);
             
 
         }
         function back() {
             performance_input_page.style.display = "block";
             results_page.style.display = "none";
+        }
+        function linear_interpolate(x1, x2, y1, y2, x) {
+            return (((y2-y1)/(x2-x1)) * (x - x1)) + y1;
         }
         function tx(x) {//convert x value in in to px of the canvas
             return (x-93)*32 + 60;
@@ -547,7 +619,7 @@
         <div style="display: flex;justify-content: center;">
             <img src="images/logo.png" alt="PPC Logo" style="max-width: 200px;">
         </div>
-        <p>(V0.2) This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. For simplicity, oil is assumed to be 6qts.</p>
+        <p>(V0.3) This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. For simplicity, oil is assumed to be 6qts.</p>
         <h3>Enter performance parameters (DA40)</h3>
 
         <h4>-Select Aircraft-</h4>
