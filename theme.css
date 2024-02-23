@@ -1,6 +1,7 @@
 body {
     background-color: rgb(21, 28, 30);
     color:rgb(205, 212, 218);
+    font-size: 16px;
 }
 input {
     background-color: rgb(28, 37, 40);
