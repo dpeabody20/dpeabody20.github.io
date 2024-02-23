@@ -24,21 +24,21 @@ function changeAircraft(new_aircraft) {
     //display bag limits
     bag_weight_2_element.disabled = false;
     if (aircraft_baggage_configuration[new_aircraft] == "c") {
-        max_bag_1_element.innerHTML = "lb (max " + station_max_value["extended_baggage_forward"] + "lb)";
-        max_bag_2_element.innerHTML = "lb (max " + station_max_value["extended_baggage_aft"] + "lb)";
+        max_bag_1_element.innerHTML = "(max " + station_max_value["extended_baggage_forward"] + "lb)";
+        max_bag_2_element.innerHTML = "(max " + station_max_value["extended_baggage_aft"] + "lb)";
     } else {
-        max_bag_1_element.innerHTML = "lb (max " + station_max_value["standard_baggage_compartment"] + "lb)";
+        max_bag_1_element.innerHTML = "(max " + station_max_value["standard_baggage_compartment"] + "lb)";
         if (aircraft_baggage_configuration[new_aircraft] == "b") {
-            max_bag_2_element.innerHTML = "lb (max " + station_max_value["standard_baggage_tube"] + "lb)";
+            max_bag_2_element.innerHTML = "(max " + station_max_value["standard_baggage_tube"] + "lb)";
         } else {
-            max_bag_2_element.innerHTML = "lb";
+            max_bag_2_element.innerHTML = "";
             bag_weight_2_element.disabled = true;
             bag_weight_2_element.value = "";
         }
     }
 
     //display fuel limits
-    max_gal_element.innerHTML = "gal (max " + fuel_max_value[aircraft_long_range_tank[new_aircraft]] + ")";
+    max_gal_element.innerHTML = "(max " + fuel_max_value[aircraft_long_range_tank[new_aircraft]] + ")";
 
 }
 function getAirport() {
@@ -231,6 +231,7 @@ function calculatePerformance() {
     
     //console.log("atmospheric parameter: " + takeoff_atmospheric_parameter);
 
+    //TAKEOFF DISTANCE
     //this finds the two closest pressure altitude and temperature values in the available dataset to linearly interpolate from
     let pressure_index_1 = 0;
     let pressure_index_2 = takeoff_atmospheric_data["altitude"].length - 1;
@@ -272,7 +273,7 @@ function calculatePerformance() {
     let takeoff_atmospheric_parameter = linear_interpolate(takeoff_atmospheric_data["altitude"][pressure_index_1], takeoff_atmospheric_data["altitude"][pressure_index_2], lower_atmospheric_parameter, upper_atmospheric_parameter, pressure_altitude);
     
     if (takeoff_atmospheric_parameter > 13) {//check that a safe takeoff can be made
-        alert("Density altitude is too high for a predictable takeoff under any weight.");
+        alert("Density altitude is too high for a predictable takeoff distance under any weight.");
         return;
     }
 
@@ -307,7 +308,7 @@ function calculatePerformance() {
     //offical takeoff distance
     let takeoff_distance = (328.084 * takeoff_distance_parameter) + 328.084;
     //now calculate over 50 foot obsticle
-    let takeoff_distance_50 = ((459.318*takeoff_distance_parameter) + 262.467) + 328.084;
+    let takeoff_distance_50 = (459.318 * takeoff_distance_parameter) + 590.551;
     
     //warning if takeoff distance is off the charts
     toDist.style.color = "";
@@ -317,6 +318,61 @@ function calculatePerformance() {
         toDist.style.color = caution_number_color;
         toDist50.style.color = caution_number_color;
     }
+
+    //LANDING DISTANCE
+    //Pressure and temperature indecies as calculated before are still completely valid
+
+    //linearly interpolate to find takeoff parameter for both the higher and lower altitude lines.
+    lower_atmospheric_parameter = linear_interpolate(landing_atmospheric_data["temp"][temp_index_1], landing_atmospheric_data["temp"][temp_index_2], landing_atmospheric_data["data"][pressure_index_1][temp_index_1], landing_atmospheric_data["data"][pressure_index_1][temp_index_2], field_temperature);
+    upper_atmospheric_parameter = 0;
+    if (field_temperature >= 30 && pressure_altitude >= 8000) { //this is an edge case since we don't have data beyond 30C for the 10000 line
+        upper_atmospheric_parameter = linear_interpolate(landing_atmospheric_data["temp"][4], landing_atmospheric_data["temp"][5], landing_atmospheric_data["data"][pressure_index_2][4], landing_atmospheric_data["data"][pressure_index_2][5], field_temperature);
+    } else {//this will run most of the time for sure!
+        upper_atmospheric_parameter = linear_interpolate(landing_atmospheric_data["temp"][temp_index_1], landing_atmospheric_data["temp"][temp_index_2], landing_atmospheric_data["data"][pressure_index_2][temp_index_1], landing_atmospheric_data["data"][pressure_index_2][temp_index_2], field_temperature);
+    }
+    //now interpolate between 2 pressure altitude lines to find the parameter
+    let landing_atmospheric_parameter = linear_interpolate(landing_atmospheric_data["altitude"][pressure_index_1], landing_atmospheric_data["altitude"][pressure_index_2], lower_atmospheric_parameter, upper_atmospheric_parameter, pressure_altitude);
+    
+    if (landing_atmospheric_parameter > 13) {//check that a safe landing can be made
+        alert("Density altitude is too high for a predictable landing distance under any weight.");
+        return;
+    }
+
+    //CALCULATE LANDING WEIGHT PARAMETER
+    //weight_index_1 and 2 are already calculated
+    //now find which two lines we should use for interpolating between.
+    weight_line_index_1 = 0;
+    weight_line_index_2 = 5;
+    //find lower weight line
+    for (let i = 0; i < landing_weight_data["data"].length - 1; i++) {
+        if (landing_atmospheric_parameter >= landing_weight_data["data"][i][0]) {
+            weight_line_index_1 = i;
+        }
+    }
+    //find upper weight line
+    for (let i = landing_weight_data["data"].length - 1; i > 0; i--) {
+        if (landing_atmospheric_parameter < landing_weight_data["data"][i][0]) {
+            weight_line_index_2 = i;
+        }
+    }
+    bottom_weight_line_parameter = linear_interpolate(landing_weight_data["weight"][weight_index_1], landing_weight_data["weight"][weight_index_2], landing_weight_data["data"][weight_line_index_1][weight_index_1], landing_weight_data["data"][weight_line_index_1][weight_index_2], total_takeoff_weight);
+    top_weight_line_parameter = linear_interpolate(landing_weight_data["weight"][weight_index_1], landing_weight_data["weight"][weight_index_2], landing_weight_data["data"][weight_line_index_2][weight_index_1], landing_weight_data["data"][weight_line_index_2][weight_index_2], total_takeoff_weight);
+    //this is just finding how far our parameter is between our weight lines, and using that same percentage to follow the line down to our weight. (linear interpolation)
+    let landing_distance_parameter = (((landing_atmospheric_parameter - landing_weight_data["data"][weight_line_index_1][0]) / (landing_weight_data["data"][weight_line_index_2][0] - landing_weight_data["data"][weight_line_index_1][0])) * (top_weight_line_parameter - bottom_weight_line_parameter)) + bottom_weight_line_parameter;
+    //offical landing distance
+    let landing_distance_50 = (328.084 * landing_distance_parameter) + 328.084;
+    //now calculate without 50 foot obsticle (just the roll)
+    let landing_distance = (150.736 * landing_distance_parameter) + 150.872;
+    
+    //warning if landing distance is off the charts
+    ldgDist.style.color = "";
+    ldgDist50.style.color = "";
+    if (landing_distance < 328.084 || landing_distance_50 > 4593.176) {
+        alert("CAUTION: Landing Distance is outside of predictable range. Values displayed may be unreliable");
+        ldgDist.style.color = caution_number_color;
+        ldgDist50.style.color = caution_number_color;
+    }
+    
     
     //CALCULATE V SPEEDS
     //first get weight bracket
@@ -345,7 +401,7 @@ function calculatePerformance() {
     //calculate Va using the formula below
     let Va = Va_max * Math.sqrt(total_landing_weight / aircraft_max_takeoff_weight);
     
-    //DISPLAY PERFORMANCE
+    //---DISPLAY PERFORMANCE---
     //header
     let date = new Date();
     header.innerHTML = "<button onclick='back()'>←Go Back</button>&nbsp;Generated " + (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getUTCHours() + ":" + date.getUTCMinutes() + "Z [You may screenshot this page]";
@@ -374,6 +430,8 @@ function calculatePerformance() {
     //takeoff and landing performance numbers (AND ROUND UP TO NEAREST TENS PLACE)
     toDist.innerHTML = takeoff_distance + 10 - (takeoff_distance % 10);
     toDist50.innerHTML = takeoff_distance_50  + 10 - (takeoff_distance_50 % 10);
+    ldgDist.innerHTML = landing_distance + 10 - (landing_distance % 10);
+    ldgDist50.innerHTML = landing_distance_50  + 10 - (landing_distance_50 % 10);
 
     //show the div!
     performance_input_page.style.display = "none";

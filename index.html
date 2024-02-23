@@ -1,55 +1,42 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <title>Peabody's Performance Calculator</title>
+
+    <link rel="stylesheet" href="theme.css">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <link rel="manifest" href="/manifest.json">
+
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
-    <style>
-        body {
-            background-color: rgb(21, 28, 30);
-            color:rgb(205, 212, 218);
-        }
-        input {
-            background-color: rgb(28, 37, 40);
-            color:rgb(205, 212, 218);
-            border: rgb(200, 200, 200) solid 1px;
-        }
-        input:disabled {
-            background-color: rgb(47, 58, 62);
-            color:rgb(175, 182, 188);
-        }
-        select {
-            background-color: rgb(28, 37, 40);
-            color:rgb(205, 212, 218);
-        }
-        button {
-            background-color: rgb(28, 37, 40);
-            color:rgb(205, 212, 218);
-        }
-        button:hover:enabled {
-            background-color: rgb(140, 189, 220);
-            color:rgb(69, 71, 72);
-        }
-        .subscript {
-            font-size:20px;
-        }
-        .numberLabel {
-            font-size:24px;
-        }
-        
-    </style>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="aircraft_data.js"></script>
     <script src="ppc.js"></script>
-  </head>
+    <script>
+        function addToHomeScreen() {
+            alert("IOS: Tap the share button on the bottom of your browser, then tap \"Add to Home Screen\".\n\nAndroid: Tap the 3 dots button on the top right of your browser, then tap \"Install app\".");
+        }
+    </script>
+
+</head>
 
 <body onload="load();">
+    <br>
     <div id="performance_input_page" style="display:block;max-width:600px;margin:auto;">
         <div style="display: flex;justify-content: center;">
             <img src="images/logo.png" alt="PPC Logo" style="max-width: 200px;">
         </div>
-        <p>(V0.6) This tool is used for calculating weight&balance and performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. The following assumptions are made: wind is 0kts (a headwind will only improve takeoff performance), level-asphalt runway, landing distance is for takeoff weight, V-speeds are calculated using takeoff weight (with the exception of Va which uses landing weight), and oil is at 6qts. For cross country trips, performance should be calculated for both departure and destination.</p>
+        <p>This tool is used for calculating weight and balance as well as performance for the DA40. Primarily for use with UVU aircraft. Calculations may not perfectly represent the values derived through use of an approved AFM. For cross country trips, performance should also be calculated for destination using expected arrival weather and fuel.</p>
+        
+        <p>For ease of access, be sure to "Add to Home Screen" in your browser.</p>
+
+        <div style="justify-content: center;">
+            <a href="javascript:addToHomeScreen();">Add to Home Screen</a>&nbsp;
+            <a href="share.html">Share</a><br><br>
+            <a href="info.html">How are these numbers calculated?</a><br>
+        </div>
+
         <h3>Enter performance parameters (DA40)</h3>
 
         <h4>-Select Aircraft-</h4>
@@ -84,13 +71,11 @@
             </tr>
             <tr>
                 <td><label for="empty_weight">Empty Weight:</label></td>
-                <td><input type="number" id="empty_weight"></td>
-                <td>lb</td>
+                <td><input type="number" id="empty_weight">&nbsp;lb</td>
             </tr>
             <tr>
                 <td><label for="empty_cg">Empty Arm:</label></td>
-                <td><input type="number" id="empty_cg"></td>
-                <td>in</td>
+                <td><input type="number" id="empty_cg">&nbsp;lb</td>
             </tr>
         </table><br>
 
@@ -98,51 +83,46 @@
         <table>
             <tr>
                 <td><label for="front_weight">Front Seats:</label></td>
-                <td><input type="number" id="front_weight" name="front_weight"></td>
-                <td>lb</td>
+                <td><input type="number" id="front_weight" name="front_weight">&nbsp;lb</td>
             </tr>
             <tr>
                 <td></td>
-                <td><input type="number" id="front_weight_2" name="front_weight_2"></td>
-                <td>lb</td>
+                <td><input type="number" id="front_weight_2" name="front_weight_2">&nbsp;lb</td>
             </tr>
             <tr>
                 <td><label for="rear_weight">Rear Seats:</label></td>
-                <td><input type="number" id="rear_weight" name="rear_weight"></td>
-                <td>lb</td>
+                <td><input type="number" id="rear_weight" name="rear_weight">&nbsp;lb</td>
             </tr>
             <tr>
                 <td></td>
-                <td><input type="number" id="rear_weight_2" name="rear_weight_2"></td>
-                <td>lb</td>
+                <td><input type="number" id="rear_weight_2" name="rear_weight_2">&nbsp;lb</td>
             </tr>
             <tr>
                 <td><label for="bag_area_1">Forward Baggage:</label></td>
-                <td><input type="number" id="bag_area_1" name="bag_area_1"></td>
-                <td id="max_bag_1">lb</td>
+                <td><input type="number" id="bag_area_1" name="bag_area_1">&nbsp;lb</td>
+                <td id="max_bag_1"></td>
             </tr>
             <tr>
                 <td><label for="bag_area_2">Aft Baggage:</label></td>
-                <td><input type="number" id="bag_area_2" name="bag_area_2"></td>
-                <td id="max_bag_2">lb</td>
+                <td><input type="number" id="bag_area_2" name="bag_area_2">&nbsp;lb</td>
+                <td id="max_bag_2"></td>
             </tr>
             <tr>
                 <td><label for="fuel">Starting Fuel:</label></td>
-                <td><input type="number" id="fuel" name="fuel"></td>
-                <td id="max_gal">gal</td>
+                <td><input type="number" id="fuel" name="fuel">&nbsp;gal</td>
+                <td id="max_gal"></td>
             </tr>
             <tr>
                 <td><label for="fuel_use">Fuel Use:</label></td>
-                <td><input type="number" id="fuel_use" name="fuel_use"></td>
-                <td>gal</td>
+                <td><input type="number" id="fuel_use" name="fuel_use">&nbsp;gal</td>
             </tr>
         </table><br>
 
         <h4>-Airport Conditions-</h4>
         <table>
-            <tr>
+            <tr style="display:none;">
                 <td><label for="airport">Airport Identifier:</label></td>
-                <td><input type="text" id="airport" name="airport" value="kpvu (this isn't working yet)" disabled="true"></td>
+                <td><input type="text" id="airport" name="airport" value="kpvu" disabled="true"></td>
                 <td><button onclick="getAirport()" disabled="true">Auto collect weather</button></td>
 
             </tr>
@@ -165,9 +145,10 @@
         <label for="disclaimer">Disclaimer: By checking this box, you understand that this tool does not replace the pilot's responsibility to verify performance charactaristics with the aircraft's approved AFM.</label><br>
         <input id="disclaimer" type="checkbox"><br><br>
         <button onclick="calculatePerformance()">Calculate Performance</button>
+        <p style="font-style: italic; color:rgb(117, 123, 123)">Version 1.0</p><br>
     </div>
     <div id="results_page"  style="display:none;width:600px;margin:auto;">
-        <div id="header" style="width: 600px;"></div><br>
+        <div id="header" style="width: 600px;"></div><br><br>
             <table style="width:200px;font-size:32px;float:right;">
                 <tr>
                     <td style="color:aquamarine;">V<sub class="subscript">GLIDE</sub></td>
