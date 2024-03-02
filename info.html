@@ -19,7 +19,7 @@
         </div>
         <p>Welcome to Peabody's Performance Calculator. This page gives technical information regarding how the calculator works. Find an element you are curious about below.</p>
         
-        <a href="index.html">Back to Calculator</a>
+        <a href="/">Back to Calculator</a>
 
         <h3>Weight and Balance</h3>
         <h4>General</h4>
@@ -44,7 +44,7 @@
         <p>Both takeoff and landing distances use takeoff weight for calculation. This will provide more accurate landing distance information for pattern work or an aborted takeoff. The calculations are made using linear interpolation between all of the lines visible in the AFM charts. Field elevations anywhere from -1000ft to 12000ft can be used, although these extremes are not recommended. Additionally, temperatures can also be used down to -40, although the AFM only provides values down to -20. With this being said, if any atmospheric calculation would cause the line to exceed the top of the window for the AFM chart, the calculation will be cancelled for high density altitude. For calculating the distance over a 50' obsticle, a simplified mathmatical representation is used instead of interpolation.</p>
 
         <h3>Pressure/Density Altitude</h3>
-        <p>Altimiter setting must be positive, but there are not other checks on this, so excercise caution to not mis-enter a value like '2.992'. Likewise there are no checks on the temperature. If any value is left blank, it is inputed as '0'. Pressure altitude is determined using the simplified equation: field elevation + ((altimiter setting - 29.92) * -930).</p>
+        <p>Altimiter setting must be positive, but there are not other checks on this, so excercise caution to not mis-enter a value like '2.992'. Likewise there are no checks on the temperature. If any value is left blank, it is inputed as '0'. Pressure altitude is determined using the simplified equation: field elevation + ((altimiter setting - 29.92) * -930). Density altitude is Pressure Altitude + (118.8 * (Field Temperature - ISA Temperature))</p>
         
         <a href="https://docs.google.com/forms/d/e/1FAIpQLSe7f8Be729_osi4rbYB7Bguf9Zrxza8aKA-jWfk47jnw-MmuA/viewform?usp=sf_link">Report Bug or Suggest a Feature</a>
         <br><br>

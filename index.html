@@ -8,7 +8,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <link rel="manifest" href="/manifest.json">
 
-    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="aircraft_data.js"></script>
@@ -21,7 +21,7 @@
 
 </head>
 
-<body onload="load();">
+<body onload="load();" onresize="resize();">
     <br>
     <div id="performance_input_page" style="display:block; max-width:600px; margin:auto;">
         <div style="display: flex;justify-content: center;">
@@ -131,79 +131,120 @@
             </tr>
             <tr>
                 <td><label for="field_temperature">Temperature:</label></td>
-                <td><input type="number" id="field_temperature" name="field_temperature" value="15"></td>
+                <td><input type="number" id="field_temperature" name="field_temperature" value=""></td>
                 <td>°c</td>
             </tr>
             <tr>
                 <td><label for="altimiter_setting">Altimiter Setting:</label></td>
-                <td><input type="number" id="altimiter_setting" name="altimiter_setting" value="29.92"></td>
+                <td><input type="number" id="altimiter_setting" name="altimiter_setting" value=""></td>
                 <td>in Hg</td>
             </tr>
         </table><br>
         <label for="disclaimer">Disclaimer: By checking this box, you understand that this tool does not replace the pilot's responsibility to verify performance charactaristics with the aircraft's approved AFM.</label><br>
         <input id="disclaimer" type="checkbox"><br><br>
         <button onclick="calculatePerformance()">Calculate Performance</button>
-        <p style="font-style: italic; color:rgb(117, 123, 123)">Version 1.0.4</p><br>
+        <p style="font-style: italic; color:rgb(117, 123, 123)">Version 1.1.0</p><br>
     </div>
-    <div id="results_page"  style="display:none; width:600px; margin:auto; padding: 0px;">
-        <div id="header" style="width: 600px;"></div><br><br>
-            <table style="width:200px;font-size:32px;float:right;">
-                <tr>
-                    <td style="color:aquamarine;">V<sub class="subscript">GLIDE</sub></td>
-                    <td id="Vglide" style="color:aquamarine;"><u>00</u></td>
-                </tr>
-                <tr>
-                    <td>V<sub class="subscript">R</sub></td>
-                    <td>59</td>
-                </tr>
-                <tr>
-                    <td>V<sub class="subscript">Y</sub></td>
-                    <td id="Vy">00</td>
-                </tr>
-                <tr>
-                    <td>V<sub class="subscript">Cruise Climb</sub></td>
-                    <td id="Vcc">00</td>
-                </tr>
-                <tr>
-                    <td>V<sub class="subscript">A</sub></td>
-                    <td id="Va">94</td>
-                </tr>
-                <tr>
-                    <td>V<sub class="subscript">REF</sub></td>
-                    <td id="Vapp">00</td>
-                </tr>
-            </table>
-            <div style="width:400px;font-size:32px;float: left; text-align: right;">
-                <table>
-                    <tr>
-                        <td class="numberLabel">Takeoff Distance:</td>
-                        <td id="toDist">INOP</td>
-                        <td class="numberLabel">&nbsp;/50':</td>
-                        <td id="toDist50">INOP</td>
-                    </tr>
-                    <tr>
-                        <td class="numberLabel">Landing Distance:</td>
-                        <td id="ldgDist">INOP</td>
-                        <td class="numberLabel">&nbsp;/50':</td>
-                        <td id="ldgDist50">INOP</td>
-                    </tr>
-                </table><br>
-                <table>
-                    <tr>
-                        <td id="toWeightText" class="numberLabel">Takeoff Weight:</td>
-                        <td id="toWeight">INOP</td>
-                    </tr>
-                    <tr>
-                        <td id="ldgWeightText" class="numberLabel">Landing Weight:</td>
-                        <td id="ldgWeight">INOP</td>
-                    </tr>
-                    <tr>
-                        <td id="ZFWeightText" class="numberLabel">Zero Fuel Weight:</td>
-                        <td id="ZFWeight">INOP</td>
-                    </tr>
-                </table>
-            </div>
-        <canvas id="W&B" width="400" height="300" style="background-color:rgb(21, 28, 30)"></canvas>
+    <div id="results_page"  style="display:none; width:88vw; left:6vw; top:0vw; padding: 0px; font-size:4.7vw; position:absolute;">
+        <div id="header" style="width: 88vw; position:absolute; font-size: 2.35vw;"></div>
+        
+        <div id="aircraftId" style="position:absolute; width:29.4vw; left:0vw; top: 7.4vw;">Aircraft ID</div>
+        
+        <div id="aircraftCallsign" style="position:absolute; width:29.4vw; left:36.8vw; top: 7.4vw;">Callsign</div>
+
+        <table id="toLdgDistance" style="position:absolute; width:73.5vw; left:4.4vw; top: 14.7vw; text-align: right;">
+            <tr>
+                <td class="numberLabel">Takeoff Distance:</td>
+                <td id="toDist">INOP</td>
+                <td class="numberLabel">&nbsp;/50':</td>
+                <td id="toDist50">INOP</td>
+            </tr>
+            <tr>
+                <td class="numberLabel">Landing Distance:</td>
+                <td id="ldgDist">INOP</td>
+                <td class="numberLabel">&nbsp;/50':</td>
+                <td id="ldgDist50">INOP</td>
+            </tr>
+        </table>
+
+        <table id="altitudes" style="position:absolute; width:29.4vw; left:0vw; top: 77.9vw; text-align: left;">
+            <tr>
+                <td class="numberLabel">Density Altitude:</td>
+            </tr>
+            <tr>
+                <td id="da" style="text-align: center;">INOP</td>
+            </tr>
+        </table>
+
+        <table id="speeds" style="position:absolute; width:29.4vw; left:0vw; top: 29.4vw;">
+            <tr>
+                <td style="color:aquamarine;">V<sub class="subscript">GLIDE</sub></td>
+                <td id="Vglide" style="color:aquamarine;"><u>00</u></td>
+            </tr>
+            <tr>
+                <td>V<sub class="subscript">R</sub></td>
+                <td>59</td>
+            </tr>
+            <tr>
+                <td>V<sub class="subscript">Y</sub></td>
+                <td id="Vy">00</td>
+            </tr>
+            <tr>
+                <td>V<sub class="subscript" style="font-size: 2.4vw;">Cruise Climb</sub></td>
+                <td id="Vcc">00</td>
+            </tr>
+            <tr>
+                <td>V<sub class="subscript">A</sub></td>
+                <td id="Va">94</td>
+            </tr>
+            <tr>
+                <td>V<sub class="subscript">REF</sub></td>
+                <td id="Vapp">00</td>
+            </tr>
+        </table>
+
+        <table id="weight" style="position:absolute; width:51.5vw; left:35.3vw; top: 29.4vw; text-align: right;">
+            <tr>
+                <td id="toWeightText" class="numberLabel">Takeoff Weight:</td>
+                <td id="toWeight">INOP</td>
+            </tr>
+            <tr>
+                <td id="ldgWeightText" class="numberLabel">Landing Weight:</td>
+                <td id="ldgWeight">INOP</td>
+            </tr>
+            <tr>
+                <td id="ZFWeightText" class="numberLabel">Zero Fuel Weight:</td>
+                <td id="ZFWeight">INOP</td>
+            </tr>
+        </table>
+
+        <canvas id="W&B" width="390" height="300" style="background-color:rgb(21, 28, 30);position:absolute; left:30.9vw; top: 48.5vw; scale: 0.5; transform-origin: top left;"></canvas>
+        
+        <div id="metar" style="display:none; position:absolute; width:88vw; left:0vw; top: 113.2vw; font-size: 2.9vw;">KPVU 260056Z 00000KT 10SM CLR 13/M04 A2995 RMK AO2 SLP140 T01331044 OTHER OTHER OTHER VCSH</div>
+
+        <div class="numberLabel" style="display:none; position:absolute; max-width:88vw; left:0vw; top: 95.6vw;">Climb Performance:</div>
+        <table id="climb" style="display:none; position:absolute; width:88vw; left:0vw; top: 101.5vw; font-size: 2.9vw;">
+            <tr>
+                <th>Altitude (MSL)</td>
+                <td>0</td>
+                <td>2000</td>
+                <td>4000</td>
+                <td>6000</td>
+                <td>8000</td>
+                <td>10000</td>
+                <td>12000</td>
+            </tr>
+            <tr>
+                <th>Climb (fpm)</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
     </div>
 </body>
 </html>

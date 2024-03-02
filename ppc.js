@@ -1,6 +1,11 @@
 
 function load() {//called on load of the body
+    resize();
     changeAircraft("ME");//'ME' stands for manual entry, which is the default selection.
+}
+function resize() {//called on resize of the body (window resize)
+    let c = document.getElementById("W&B");
+    c.style.scale = window.outerWidth / 680;
 }
 function changeAircraft(new_aircraft) {
     //reference for input elements
@@ -81,6 +86,11 @@ function calculatePerformance() {
     let disclaimer = document.getElementById("disclaimer");
     
     //display variables
+    let aircraftId = document.getElementById("aircraftId");
+    let aircraftCallsign = document.getElementById("aircraftCallsign");
+
+    let da = document.getElementById("da");
+
     let toWeightText = document.getElementById("toWeightText");
     let ldgWeightText = document.getElementById("ldgWeightText");
     let ZFWeightText = document.getElementById("ZFWeightText");
@@ -172,6 +182,10 @@ function calculatePerformance() {
         alert("Temperature must be within the bounds [-40, 50]");
         return;
     }
+    if (altimiter_setting < 29 || altimiter_setting > 31) {
+        alert("Altimiter setting must be within the bounds [29.01, 30.99]");
+        return;
+    }
 
     //compute weight and balance
     let total_ZF_weight = empty_weight + front_weight + front_weight_2 + rear_weight + rear_weight_2 + bag_weight + bag_weight_2 - (2*oil_mass);
@@ -224,8 +238,10 @@ function calculatePerformance() {
     }
 
     //---COMPUTE PERFORMANCE---
-
+    let isa_temperature = 15 - (field_elevation * 0.002);
     let pressure_altitude = field_elevation + ((altimiter_setting - 29.92) * -930);
+    let density_altitude = pressure_altitude + (118.8 * (field_temperature - isa_temperature));
+    
     //takeoff
     //let takeoff_atmospheric_parameter = (0.183908 * Math.exp(0.000303751 * pressure_altitude) + 3.34675) * Math.exp((0.00695801 * Math.exp(0.0000987383 * pressure_altitude) + 0.00108574) * field_temperature) + (0.00028 * pressure_altitude) - 2;
     
@@ -404,7 +420,18 @@ function calculatePerformance() {
     //---DISPLAY PERFORMANCE---
     //header
     let date = new Date();
-    header.innerHTML = "<button onclick='back()'>←Go Back</button>&nbsp;Generated " + (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getUTCHours() + ":" + date.getUTCMinutes() + "Z [You may screenshot this page]";
+    header.innerHTML = "<button onclick='back()' style='font-size: 2.35vw; padding: 0.7vw 1.5vw;'>←Go Back</button>&nbsp;Generated " + (date.getMonth()+1) + "/" + date.getDate() + "/" + date.getFullYear() + " " + date.getUTCHours() + ":" + date.getUTCMinutes() + "Z [You may screenshot this page]";
+    
+    //ID
+    aircraftId.innerHTML = aircraft;
+    aircraftCallsign.innerHTML = aircraft_callsign[aircraft];
+
+    //Density altitude
+    da.innerHTML = Math.round(density_altitude);
+    da.style.color = "";
+    if (density_altitude >= 5000) {
+        da.style.color = landing_color;
+    }
     
     //weight and balance chart
     draw_weight_and_balance_setting();
@@ -437,7 +464,7 @@ function calculatePerformance() {
     performance_input_page.style.display = "none";
     results_page.style.display = "block";
     //adjust viewport
-    document.getElementById("viewport"). setAttribute("content", "width=700, user-scalable=0");
+    //document.getElementById("viewport"). setAttribute("content", "width=700, user-scalable=0");
     
 
 }

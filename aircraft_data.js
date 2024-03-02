@@ -1,3 +1,26 @@
+const aircraft_callsign = {
+    ME: "(Manual Entry)",
+    N103UV: "WOLF33",
+    N104UV: "WOLF34",
+    N105UV: "WOLF35",
+    N106UV: "WOLF36",
+    N107UV: "WOLF37",
+    N108UV: "WOLF38",
+    N109UV: "WOLF39",
+    N110UV: "WOLF40",
+    N112UV: "WOLF42",
+    N113UV: "WOLF43",
+    N114UV: "WOLF44",
+    N115UV: "WOLF45",
+    N116UV: "WOLF46",
+    N118UV: "WOLF48",
+    N119UV: "WOLF49",
+    N749DS: "",
+    N779US: "WOLF47",
+    N793US: "WOLF41",
+    N4012X: ""
+};
+
 const aircraft_weight = {
     ME: 0,
     N103UV: 1767.89,
