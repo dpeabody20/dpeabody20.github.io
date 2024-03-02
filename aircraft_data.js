@@ -1,3 +1,4 @@
+const AVWXAuth = "dgSyoTMphY16rELRhzhAKAbjT8-rHF-ViWh-V-HFvm8";
 const aircraft_callsign = {
     ME: "(Manual Entry)",
     N103UV: "WOLF33",

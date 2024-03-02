@@ -10,8 +10,8 @@
 
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="aircraft_data.js"></script>
+    <script src="get_airport.js"></script>
     <script src="ppc.js"></script>
     <script>
         function addToHomeScreen() {
@@ -118,15 +118,42 @@
 
         <h4>-Airport Conditions-</h4>
         <table>
-            <tr style="display:none;">
+            <tr>
                 <td><label for="airport">Airport Identifier:</label></td>
-                <td><input type="text" id="airport" name="airport" value="kpvu" disabled="true"></td>
-                <td><button onclick="getAirport()" disabled="true">Auto collect weather</button></td>
+                <td>
+                    <input type="text" id="airport" name="airport" list="suggestions" value="KPVU">
+                    <datalist id="suggestions">
+                        <option value="KPVU">
+                        <option value="U14">
+                        <option value="KHCR">
+                        <option value="KTVY">
+                        <option value="KDTA">
+                        <option value="KFOM">
+                        <option value="KENV">
+                        <option value="KRIF">
+                        <option value="41U">
+                        <option value="KOGD">
+                        <option value="KBMC">
+                        <option value="KSPK">
+                        <option value="KEVW">
+                        <option value="KMLF">
+                        <option value="KCDC">
+                        <option value="KSGU">
+                        <option value="KFBR">
+                        <option value="KLGU">
+                        <option value="KBCE">
+                    </datalist>
+                </td>
+                <td><button onclick="getAirport()" id="weatherButton">Auto collect weather</button></td>
 
             </tr>
             <tr>
+                <td id="weatherResults" colspan="2" style="font-size: 12px; font-style: italic;">&nbsp;</td>
+                <td><button onclick="clearWeather()" id="clearWeather" style="display: none;">Clear</button></td>
+            </tr>
+            <tr>
                 <td><label for="field_elevation">Field Elevation:</label></td>
-                <td><input type="number" id="field_elevation" name="field_elevation" value="4500"></td>
+                <td><input type="number" id="field_elevation" name="field_elevation" value=""></td>
                 <td>ft</td>
             </tr>
             <tr>
@@ -135,15 +162,15 @@
                 <td>°c</td>
             </tr>
             <tr>
-                <td><label for="altimiter_setting">Altimiter Setting:</label></td>
-                <td><input type="number" id="altimiter_setting" name="altimiter_setting" value=""></td>
+                <td><label for="altimeter_setting">Altimeter Setting:</label></td>
+                <td><input type="number" id="altimeter_setting" name="altimeter_setting" value=""></td>
                 <td>in Hg</td>
             </tr>
         </table><br>
         <label for="disclaimer">Disclaimer: By checking this box, you understand that this tool does not replace the pilot's responsibility to verify performance charactaristics with the aircraft's approved AFM.</label><br>
         <input id="disclaimer" type="checkbox"><br><br>
         <button onclick="calculatePerformance()">Calculate Performance</button>
-        <p style="font-style: italic; color:rgb(117, 123, 123)">Version 1.1.0</p><br>
+        <p style="font-style: italic; color:rgb(117, 123, 123)">Version 1.3.1</p><br>
     </div>
     <div id="results_page"  style="display:none; width:88vw; left:6vw; top:0vw; padding: 0px; font-size:4.7vw; position:absolute;">
         <div id="header" style="width: 88vw; position:absolute; font-size: 2.35vw;"></div>
@@ -220,7 +247,7 @@
 
         <canvas id="W&B" width="390" height="300" style="background-color:rgb(21, 28, 30);position:absolute; left:30.9vw; top: 48.5vw; scale: 0.5; transform-origin: top left;"></canvas>
         
-        <div id="metar" style="display:none; position:absolute; width:88vw; left:0vw; top: 113.2vw; font-size: 2.9vw;">KPVU 260056Z 00000KT 10SM CLR 13/M04 A2995 RMK AO2 SLP140 T01331044 OTHER OTHER OTHER VCSH</div>
+        <div id="metar" style="position:absolute; width:88vw; left:0vw; top: 113.2vw; font-size: 2.9vw;"></div>
 
         <div class="numberLabel" style="display:none; position:absolute; max-width:88vw; left:0vw; top: 95.6vw;">Climb Performance:</div>
         <table id="climb" style="display:none; position:absolute; width:88vw; left:0vw; top: 101.5vw; font-size: 2.9vw;">

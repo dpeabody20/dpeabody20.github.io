@@ -46,17 +46,6 @@ function changeAircraft(new_aircraft) {
     max_gal_element.innerHTML = "(max " + fuel_max_value[aircraft_long_range_tank[new_aircraft]] + ")";
 
 }
-function getAirport() {
-    //case insensitive (prefer lowercase)
-    //let metarReq = "https://aviationweather.gov/api/data/metar?ids=kpvu";
-    //uppercase!
-    //let airportInfo = "https://aviationweather.gov/api/data/airport?ids=KPVU";
-    
-    //HTTP request
-    //console.log(jQuery.get(metarReq));
-    
-    alert("not working yet");
-}
 function calculatePerformance() {
 
     //data collection variables
@@ -79,9 +68,13 @@ function calculatePerformance() {
     let fuel = Number(document.getElementById("fuel").value);
     let fuel_use = Number(document.getElementById("fuel_use").value);
 
-    let field_elevation = Number(document.getElementById("field_elevation").value);
-    let field_temperature = Number(document.getElementById("field_temperature").value);
-    let altimiter_setting = Number(document.getElementById("altimiter_setting").value);
+    let field_elevation_ele = document.getElementById("field_elevation");
+    let field_temperature_ele = document.getElementById("field_temperature");
+    let altimeter_setting_ele = document.getElementById("altimeter_setting");
+
+    let field_elevation = Number(field_elevation_ele.value);
+    let field_temperature = Number(field_temperature_ele.value);
+    let altimeter_setting = Number(altimeter_setting_ele.value);
 
     let disclaimer = document.getElementById("disclaimer");
     
@@ -132,7 +125,7 @@ function calculatePerformance() {
         alert("Baggage is not a valid value. Must be positive.");
         return;
     }
-    if (altimiter_setting.value <= 0) {
+    if (altimeter_setting.value <= 0) {
         alert("Altimiter setting is not a valid value. Must be positive.");
         return;
     }
@@ -182,8 +175,17 @@ function calculatePerformance() {
         alert("Temperature must be within the bounds [-40, 50]");
         return;
     }
-    if (altimiter_setting < 29 || altimiter_setting > 31) {
+    if (altimeter_setting < 29 || altimeter_setting > 31) {
         alert("Altimiter setting must be within the bounds [29.01, 30.99]");
+        return;
+    }
+    //blank checks
+    if (field_elevation_ele.value == "") {
+        alert("Field Elevation cannot be blank.");
+        return;
+    }
+    if (field_temperature_ele.value == "") {
+        alert("Field Temperature cannot be blank.");
         return;
     }
 
@@ -239,7 +241,7 @@ function calculatePerformance() {
 
     //---COMPUTE PERFORMANCE---
     let isa_temperature = 15 - (field_elevation * 0.002);
-    let pressure_altitude = field_elevation + ((altimiter_setting - 29.92) * -930);
+    let pressure_altitude = field_elevation + ((altimeter_setting - 29.92) * -930);
     let density_altitude = pressure_altitude + (118.8 * (field_temperature - isa_temperature));
     
     //takeoff
