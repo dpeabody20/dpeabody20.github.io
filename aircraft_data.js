@@ -24,7 +24,7 @@ const aircraft_callsign = {
 
 const aircraft_weight = {
     ME: 0,
-    N103UV: 1767.89,
+    N103UV: 1812.00,
     N104UV: 1735.86,
     N105UV: 1754.86,
     N106UV: 1771.86,
@@ -46,7 +46,7 @@ const aircraft_weight = {
 };
 const aircraft_cg = {
     ME: 0,
-    N103UV: 96.598,
+    N103UV: 97.80,
     N104UV: 96.99,
     N105UV: 96.85,
     N106UV: 97.07,
