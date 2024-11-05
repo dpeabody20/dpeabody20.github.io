@@ -10,15 +10,20 @@
 
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
 
-    <script type="module" src="scripts/populate_questions.js"></script>
+    <script src="scripts/populate_questions.js"></script>
     <script src="scripts/assess_risk.js"></script>
     <script src="scripts/populate_results.js"></script>
     <script src="scripts/page.js"></script>
+    <script>
+        function load() {
+            populate_questions();
+        }
+    </script>
     
 
 </head>
 
-<body onload="populate_questions();" onresize="resize();">
+<body onload="load();" onresize="resize();">
     <br>
     <div id="header">
         I am the header 
