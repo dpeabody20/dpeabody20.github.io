@@ -12,6 +12,6 @@ function populate_questions() {
 
     //let questions_div = document.getElementById("questions");
 
-    //console.log(questions);
+    console.log(questions);
 
 }
