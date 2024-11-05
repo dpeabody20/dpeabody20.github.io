@@ -1,0 +1,67 @@
+body {
+    margin: 0;
+    padding: 10px;
+    background-color: rgb(21, 28, 30);
+    color:rgb(205, 212, 218);
+    font-size: 16px;
+    font-family: Tahoma;
+}
+input {
+    background-color: rgb(28, 37, 40);
+    color:rgb(205, 212, 218);
+    border: rgb(200, 200, 200) solid 1px;
+    width: 70px;
+}
+input:disabled {
+    background-color: rgb(47, 58, 62);
+    color:rgb(175, 182, 188);
+}
+select {
+    background-color: rgb(28, 37, 40);
+    color:rgb(205, 212, 218);
+}
+button {
+    background-color: rgb(28, 37, 40);
+    color:rgb(205, 212, 218);
+    padding: 5px 10px;
+}
+button:hover:enabled {
+    background-color: rgb(140, 189, 220);
+    color:rgb(44, 46, 47);
+}
+a:link, a:visited {
+    background-color: rgb(28, 37, 40);
+    color:rgb(205, 212, 218);
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline;
+    outline: 1px solid rgb(205, 212, 218);
+}
+
+a:hover, a:active {
+    background-color: rgb(140, 189, 220);
+    color:rgb(44, 46, 47);
+}
+.subscript {
+    font-size:2.9vw;
+}
+.numberLabel {
+    font-size:3.5vw;
+}
+#climb {
+    border-collapse:collapse;
+}
+#climb td {
+    border: 1px solid rgb(205, 212, 218);
+    padding: 0.3vw;
+    width: 9.6vw;
+    text-align: center;
+}
+#climb th {
+    border: 1px solid rgb(205, 212, 218);
+    padding: 0.6vw;
+    width: 20.6vw;
+    text-align: right;
+    font-weight: normal;
+}

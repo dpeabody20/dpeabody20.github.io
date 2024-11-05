@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>UVU Digital FRAT</title>
+
+    <link rel="stylesheet" href="theme.css">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1">
+
+    <script>
+        function load() {//called on load of the body
+            populate_questions();
+        }
+        function resize() {//called on resize of the body (window resize)
+            
+        }
+    </script>
+    <script type="module" src="scripts/populate_questions.js"></script>
+    <script src="scripts/assess_risk.js"></script>
+    <script src="scripts/populate_results.js"></script>
+
+</head>
+
+<body onload="load();" onresize="resize();">
+    <br>
+    <div id="header">
+        I am the header 
+    </div>
+    <div id="questions">
+
+    </div>
+    <div id="results">
+        
+    </div>
+</body>
+</html>

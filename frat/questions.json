@@ -1,0 +1,263 @@
+{
+    "questions": {
+
+        "flight_conditions": {
+            "type":0,
+            "display_name":"Flight Conditions",
+            "hover_text":""
+        },
+
+            "crosswind": {
+                "type":1,
+                "display_name":"Crosswind Component",
+                "hover_text":"Enter the crosswind component for the runway being used. This should be the greater of the departure or destination airport.",
+                "units":"kts",
+
+                "absolute_bounds":[0,15],
+                "red_bounds":[0,9.999],
+                "yellow_bounds":[0,6.999]
+            },
+
+            "gust": {
+                "type":1,
+                "display_name":"Wind Gust Factor",
+                "hover_text":"Enter the gust factor. This is the maximum wind speed minus the average wind speed. For example, if the winds are 15 knots gusting 20, the gust factor is 5kts.",
+                "units":"kts",
+
+                "absolute_bounds":[0,10],
+                "red_bounds":[0,4.999],
+                "yellow_bounds":[0,2.999]
+            },
+
+            "visibility": {
+                "type":6,
+                "display_name":"Visibility",
+                "hover_text":"Enter the lowest layer of BKN or OVC in feet AGL.",
+                "units":"sm",
+
+                "override_text":"Unlimited",
+                "override_value":9999,
+
+                "absolute_bounds":[0,20000],
+                "red_bounds":[1500,20000],
+                "yellow_bounds":[2000,20000]
+            },
+
+            "ceiling": {
+                "type":6,
+                "display_name":"Ceiling",
+                "hover_text":"Enter the lowest layer of BKN or OVC in feet AGL.",
+                "units":"ft",
+
+                "override_text":"Unlimited",
+                "override_value":9999,
+
+                "absolute_bounds":[0,20000],
+                "red_bounds":[1500,20000],
+                "yellow_bounds":[2000,20000]
+            },
+
+            "temperature": {
+                "type":1,
+                "display_name":"Temperature",
+                "hover_text":"Field temperature.",
+                "units":"°C",
+
+                "absolute_bounds":[-34,43],
+                "red_bounds":[0,32],
+                "yellow_bounds":[5,32]
+            },
+
+            "runway_condition_report": {
+                "type":2,
+                "display_name":"Runway Condition Report",
+                "hover_text":"",
+
+                "options":["Dry","Wet","Icy/Standing Water"]
+            },
+
+            "thunderstorms": {
+                "type":2,
+                "display_name":"Thunderstorms",
+                "hover_text":"",
+
+                "options":["None","Few","Scattered","Numerous"]
+            },
+
+            "bird_activity": {
+                "type":2,
+                "display_name":"Bird Activity",
+                "hover_text":"",
+
+                "options":["None","Reported","Severe"]
+            },
+
+            "night": {
+                "type":2,
+                "display_name":"Night Flight",
+                "hover_text":"",
+
+                "options":["Day","Night"]
+            },
+
+        "flight_profile": {
+            "type":0,
+            "display_name":"Flight Profile",
+            "hover_text":""
+        },
+
+            "solo_flight": {
+                "type":2,
+                "display_name":"Solo Flight",
+                "hover_text":"",
+
+                "options":["Solo","Dual"]
+            },
+
+            "unfamiliar_airport": {
+                "type":2,
+                "display_name":"Unfamiliar Airport",
+                "hover_text":"The airport is unfamiliar to either pilot. Have you been to this airport within the last 6 months?",
+
+                "options":["Yes","No"]
+            },
+
+            "touch_and_go": {
+                "type":2,
+                "display_name":"Touch and Go",
+                "hover_text":"Any flight/lesson containing successive landing/takeoff.",
+
+                "options":["Yes","No"]
+            },
+
+            "circle_to_land": {
+                "type":2,
+                "display_name":"Circle to Land",
+                "hover_text":"Performing circle to land as part of instrument training.",
+
+                "options":["Yes","No"]
+            },
+
+            "no_flap_patterns": {
+                "type":2,
+                "display_name":"No Flap Patterns",
+                "hover_text":"Performing touch and goes without flaps",
+
+                "options":["Yes","No"]
+            },
+
+            "checkride": {
+                "type":2,
+                "display_name":"Checkride/Stage Check",
+                "hover_text":"Is this flight a checkride or stage check?",
+
+                "options":["Yes","No"]
+            },
+
+            "congested": {
+                "type":2,
+                "display_name":"Flight in congested airspace (SLC or KSPK)",
+                "hover_text":"",
+
+                "options":["Yes","No"]
+            },
+
+            "short_runway": {
+                "type":2,
+                "display_name":"Runway < 2500 feet",
+                "hover_text":"Any takeoff/landing on a runway with a length less than 2500'.",
+
+                "options":["Yes","No"]
+            },
+
+            "spins": {
+                "type":2,
+                "display_name":"Spins (Chief Only)",
+                "hover_text":"",
+
+                "options":["Yes","No"]
+            },
+
+            "one_engine_inoperative": {
+                "type":2,
+                "display_name":"One Engine Inoperative",
+                "hover_text":"For multi-engine training only. For single engine aircraft, select 'Not Applicable'.",
+
+                "options":["Yes","No","Not Applicable"]
+            },
+
+        "human_factors": {
+            "type":0,
+            "display_name":"Human Factors",
+            "hover_text":""
+        },
+
+            "new_cfi": {
+                "type":2,
+                "display_name":"New CFI (less than 1 Semester @ UVU)",
+                "hover_text":"Still applicable for Solo flights.",
+
+                "options":["Yes","No"]
+            },
+
+            "behind_training": {
+                "type":2,
+                "display_name":"Over 2 weeks behind",
+                "hover_text":"Behind training schedule by >2 weeks.",
+
+                "options":["Yes","No"]
+            },
+
+            "cfi_out_of_aircraft": {
+                "type":2,
+                "display_name":"CFI out of aircraft > 2 weeks",
+                "hover_text":"",
+
+                "options":["Yes","No"]
+            },
+
+            "student_out_of_aircraft": {
+                "type":2,
+                "display_name":"Student out of aircraft > 2 weeks",
+                "hover_text":"",
+
+                "options":["Yes","No"]
+            },
+
+            "early_flight": {
+                "type":2,
+                "display_name":"Show time before 0700",
+                "hover_text":"Early morning flight requiring arrival before 7am local time.",
+
+                "options":["Yes","No"]
+            },
+
+            "late_flight": {
+                "type":2,
+                "display_name":"Flight later than 2200",
+                "hover_text":"Flight expected to return later than 10pm local time.",
+
+                "options":["Yes","No"]
+            },
+
+            "failed_checkride": {
+                "type":2,
+                "display_name":"Failed Checkride/Stage Check - past 2 days",
+                "hover_text":"",
+
+                "options":["Yes","No"]
+            },
+
+            "personal_factors": {
+                "type":1,
+                "display_name":"Personal Factors (anxiety, stress, ect)",
+                "hover_text":"Number from 1-5 describing other personal human factors that may pose increased risk. Think IMSAFE. Must be at least 1.",
+                "units":"Number from 1-5",
+
+                "absolute_bounds":[1,5],
+                "red_bounds":[3.999,5],
+                "yellow_bounds":[2.999,5]
+            }
+
+    }
+}
