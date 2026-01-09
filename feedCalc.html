@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feeding Tube Rate Calculator</title>
+    <style>
+        :root {
+            --primary-color: #0077be;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .calculator-card {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box; /* Ensures padding doesn't widen element */
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 119, 190, 0.2);
+        }
+
+        /* Checkbox styling */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .checkbox-group input {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        input:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            color: #6c757d;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 2rem;
+            background-color: #f0f8ff;
+            border: 1px solid #bde0fe;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dbe9f4;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .unit {
+            font-size: 0.8rem;
+            color: #777;
+            font-weight: normal;
+        }
+
+        .error-msg {
+            color: #d32f2f;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-card">
+    <h1>Tube Feed Rate Calc</h1>
+
+    <div class="input-group">
+        <label for="totalFormula">Total Formula (oz)</label>
+        <input type="number" id="totalFormula" step="0.1" placeholder="e.g., 4.0">
+    </div>
+
+    <div class="input-group">
+        <label for="feedDuration">Total Feed Duration (hours)</label>
+        <input type="number" id="feedDuration" step="0.1" placeholder="e.g., 2.0">
+        <div id="timeError" class="error-msg">Duration must be longer than 15 mins (0.25 hr) for bolus feeds.</div>
+    </div>
+
+    <div class="checkbox-group">
+        <input type="checkbox" id="includeBolus">
+        <label for="includeBolus">Include 15 min Bolus Start</label>
+    </div>
+
+    <div class="input-group">
+        <label for="bolusAmount">Bolus Amount (oz)</label>
+        <input type="number" id="bolusAmount" step="0.1" placeholder="e.g., 1.0" disabled>
+        <div id="volError" class="error-msg">Bolus amount cannot be greater than Total Formula.</div>
+    </div>
+
+    <div class="results-section">
+        <div class="result-row">
+            <span class="result-label">15 min Bolus Rate:</span>
+            <span class="result-value" id="bolusRateDisplay">-- <span class="unit">ml/hr</span></span>
+        </div>
+        <div class="result-row">
+            <span class="result-label">Remainder (Slow) Rate:</span>
+            <span class="result-value" id="slowRateDisplay">-- <span class="unit">ml/hr</span></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Constants
+    const OZ_TO_ML = 29.5735;
+    const BOLUS_DURATION_HR = 0.25; // 15 minutes
+
+    // Elements
+    const totalFormulaInput = document.getElementById('totalFormula');
+    const feedDurationInput = document.getElementById('feedDuration');
+    const includeBolusCheck = document.getElementById('includeBolus');
+    const bolusAmountInput = document.getElementById('bolusAmount');
+    
+    const bolusRateDisplay = document.getElementById('bolusRateDisplay');
+    const slowRateDisplay = document.getElementById('slowRateDisplay');
+    
+    const volError = document.getElementById('volError');
+    const timeError = document.getElementById('timeError');
+
+    // Event Listeners
+    includeBolusCheck.addEventListener('change', toggleBolusInput);
+    
+    [totalFormulaInput, feedDurationInput, includeBolusCheck, bolusAmountInput].forEach(input => {
+        input.addEventListener('input', calculateRates);
+    });
+
+    function toggleBolusInput() {
+        if (includeBolusCheck.checked) {
+            bolusAmountInput.disabled = false;
+        } else {
+            bolusAmountInput.disabled = true;
+            bolusAmountInput.value = ''; // Clear value when disabled
+            volError.classList.remove('visible');
+        }
+        calculateRates();
+    }
+
+    function calculateRates() {
+        // Reset Errors
+        volError.classList.remove('visible');
+        timeError.classList.remove('visible');
+
+        // Get Values
+        const totalOz = parseFloat(totalFormulaInput.value);
+        const totalHrs = parseFloat(feedDurationInput.value);
+        const isBolus = includeBolusCheck.checked;
+        const bolusOz = parseFloat(bolusAmountInput.value) || 0;
+
+        // Validation: Check if basic inputs exist
+        if (!totalOz || !totalHrs) {
+            resetDisplays();
+            return;
+        }
+
+        // Convert total to ml
+        const totalMl = totalOz * OZ_TO_ML;
+        
+        let calculatedBolusRate = 0;
+        let calculatedSlowRate = 0;
+
+        if (isBolus) {
+            // Validation: Bolus specific
+            if (bolusOz >= totalOz) {
+                volError.classList.add('visible');
+                resetDisplays();
+                return;
+            }
+            if (totalHrs <= BOLUS_DURATION_HR) {
+                timeError.classList.add('visible');
+                resetDisplays();
+                return;
+            }
+
+            // 1. Calculate Bolus Rate
+            // Rate = Volume / Time
+            const bolusMl = bolusOz * OZ_TO_ML;
+            calculatedBolusRate = bolusMl / BOLUS_DURATION_HR;
+
+            // 2. Calculate Slow Feed Rate
+            // Remaining Volume = Total - Bolus
+            // Remaining Time = Total Time - 15 mins (0.25hr)
+            const remainingMl = totalMl - bolusMl;
+            const remainingTime = totalHrs - BOLUS_DURATION_HR;
+            
+            calculatedSlowRate = remainingMl / remainingTime;
+
+        } else {
+            // Standard Rate (No Bolus)
+            calculatedBolusRate = 0;
+            calculatedSlowRate = totalMl / totalHrs;
+        }
+
+        // Update UI (Round to 1 decimal place)
+        if (isBolus) {
+            bolusRateDisplay.innerHTML = `${calculatedBolusRate.toFixed(1)} <span class="unit">ml/hr</span>`;
+        } else {
+            bolusRateDisplay.innerHTML = `N/A`;
+        }
+        
+        slowRateDisplay.innerHTML = `${calculatedSlowRate.toFixed(1)} <span class="unit">ml/hr</span>`;
+    }
+
+    function resetDisplays() {
+        bolusRateDisplay.innerHTML = `-- <span class="unit">ml/hr</span>`;
+        slowRateDisplay.innerHTML = `-- <span class="unit">ml/hr</span>`;
+    }
+</script>
+
+</body>
+</html>
